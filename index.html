@@ -33,54 +33,54 @@
                 </div>
                 <div class="code-display-body">
                     <pre class="line-numbers code-display"><code class="language-typescript">
- class TaskManager{
-     private tasks: string[] = [];
+class TaskManager{
+    private tasks: string[] = [];
+
+    addTask(task: string){
+        this.tasks.push(task);
+    }
+
+    async processTasks(){
+        for(const task of this.tasks){
+            console.log(`Processing: ${task}`);
+            await new Promise(r => setTimeout(r, 500));
+        }
+        this.tasks = [];
+    }
+}
  
-     addTask(task: string){
-         this.tasks.push(task);
-     }
- 
-     async processTasks(){
-         for(const task of this.tasks){
-             console.log(`Processing: ${task}`);
-             await new Promise(r => setTimeout(r, 500));
-         }
-         this.tasks = [];
-     }
- }
- 
- const manager = new TaskManager();
- manager.addTask("Collect data");
- manager.addTask("Analyze results");
- manager.processTasks();
+const manager = new TaskManager();
+manager.addTask("Collect data");
+manager.addTask("Analyze results");
+manager.processTasks();
                     </code></pre>
                     <pre class="line-numbers code-display"><code class="language-rust">
- use tokio::time::{sleep, Duration};
- struct TaskManager{
-     tasks: Vec<String>,
- }
+use tokio::time::{sleep, Duration};
+struct TaskManager{
+    tasks: Vec<String>,
+}
 
- impl TaskManager{
-     fn new() -> Self{
-         Self {tasks: vec![]}
-     }
+impl TaskManager{
+    fn new() -> Self{
+        Self {tasks: vec![]}
+    }
  
-     async fn process_tasks(&mut self){
-         for task in &self.tasks{
-             println!("Processing: {}", task);
-             sleep(Duration::from_millis(500)).await;
-         }
-         self.tasks.clear();
-     }
- }
+    async fn process_tasks(&mut self){
+        for task in &self.tasks{
+            println!("Processing: {}", task);
+            sleep(Duration::from_millis(500)).await;
+        }
+        self.tasks.clear();
+    }
+}
 
- #[tokio::main]
- async fn main(){
-     let mut manager = TaskManager::new();
-     manager.tasks.push("Collect data".to_string());
-     manager.tasks.push("Analyze results".to_string());
-     manager.process_tasks().await;
- }
+#[tokio::main]
+async fn main(){
+    let mut manager = TaskManager::new();
+    manager.tasks.push("Collect data".to_string());
+    manager.tasks.push("Analyze results".to_string());
+    manager.process_tasks().await;
+}
                     </code></pre>
                 </div>
             </div>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./css/prism.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/prism-numbers.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/index.css">
+    
+    <script type="text/javascript" src="./js/prism.min.js"></script>
+    <script type="text/javascript" src="./js/prism-typescript.min.js"></script>
+    <script type="text/javascript" src="./js/prism-rust.min.js"></script>
+    <script type="text/javascript" src="./js/prism-numbers.min.js"></script>
+    
+    <script type="text/javascript" src="./js/index.js"></script>
+    <title>Golem Agent Simulation</title>
+</head>
+<body>
+    <div class="page">
+        <div class="page-title">The Code You Write</div>
+        <div class="page-text">
+            <b>No DSLs. No boilerplate. No lock-in.</b><br>
+            Write a few lines of ordinary, stateful TypeScript or Rust. Golem turns it into durable, distributed agent that drives your 
+            workflow, tools, and AI logic - without changing how you code.
+        </div>
+        <div class="code-display-container">    
+            <div class="code-display-window">
+                <div class="code-display-head">
+                    <div class="code-display-tab-container">
+                        <div class="code-display-tab code-display-selected-tab">TypeScript</div>
+                        <div class="code-display-tab">Rust</div>
+                    </div>
+                </div>
+                <div class="code-display-body">
+                    <pre class="line-numbers code-display"><code class="language-typescript">
+ class TaskManager{
+     private tasks: string[] = [];
+ 
+     addTask(task: string){
+         this.tasks.push(task);
+     }
+ 
+     async processTasks(){
+         for(const task of this.tasks){
+             console.log(`Processing: ${task}`);
+             await new Promise(r => setTimeout(r, 500));
+         }
+         this.tasks = [];
+     }
+ }
+ 
+ const manager = new TaskManager();
+ manager.addTask("Collect data");
+ manager.addTask("Analyze results");
+ manager.processTasks();
+                    </code></pre>
+                    <pre class="line-numbers code-display"><code class="language-rust">
+ use tokio::time::{sleep, Duration};
+ struct TaskManager{
+     tasks: Vec<String>,
+ }
+
+ impl TaskManager{
+     fn new() -> Self{
+         Self {tasks: vec![]}
+     }
+ 
+     async fn process_tasks(&mut self){
+         for task in &self.tasks{
+             println!("Processing: {}", task);
+             sleep(Duration::from_millis(500)).await;
+         }
+         self.tasks.clear();
+     }
+ }
+
+ #[tokio::main]
+ async fn main(){
+     let mut manager = TaskManager::new();
+     manager.tasks.push("Collect data".to_string());
+     manager.tasks.push("Analyze results".to_string());
+     manager.process_tasks().await;
+ }
+                    </code></pre>
+                </div>
+            </div>
+        </div>
+        <div class="page-title">The Runtime You <u>Don't</u> Write</div>
+        <div class="page-text">
+            <b>Beneath the surface, Golem runs everything your agents need to survive in production</b><br>
+            Durability. Exaclty-once side effects. Full execution history. Instant failover, Unlimited pause-resume. Isolation. Zero downtime upgrades. 
+            It's the reliability layer frameworks can't deliver - and you'd never want to DIY.
+        </div>
+        <div class="chaos-buttons-container">
+            <button class="chaos-button" id="trigger-agent">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Trigger Agent</div>
+            </button>
+            <button class="chaos-button" id="kill-node">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Kill Node</div>
+            </button>
+            <button class="chaos-button" id="fail-interaction">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Fail Interaction</div>
+            </button>
+            <button class="chaos-button" id="suspend-agent">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Suspend Agent</div>
+            </button>
+            <button class="chaos-button" id="inject-defect">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Inject Defect</div>
+            </button>
+            <button class="chaos-button" id="troubleshoot">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Troubleshoot</div>
+            </button>
+            <button class="chaos-button" id="update-agent">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Update Agent</div>
+            </button>
+            <button id="side-menu"></button>
+        </div>
+        <div class="CTA-bar">Build invincible agents with Golem — Start free · Read docs</div>
+        <div class="main-container">
+            <div class="agent-container">
+                <div class="main-container-head suspended-head">Suspended Agents: Infrastructure Cost 0$</div>
+                <div class="suspended-agent-container">
+                    <div class="agent">
+                        <div class="agent-icon agent-sleep"></div>
+                        <div class="agent-text">Agent 4</div>
+                    </div>
+                    <div class="agent">
+                        <div class="agent-icon agent-sleep"></div>
+                        <div class="agent-text">Agent 5</div>
+                    </div>
+                </div>
+                <div class="main-container-head active-head">Active Agents</div>
+                <div class="active-agent-container">
+                    <div class="node-conatiner">
+                        <div class="node">
+                            <div class="note-head">Node 1</div>
+                            <div class="node-body">
+                                <div class="agent">
+                                    <div class="agent-icon"></div>
+                                    <div class="agent-text">Agent 1</div>
+                                </div>
+                                <div class="agent">
+                                    <div class="agent-icon"></div>
+                                    <div class="agent-text">Agent 2</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="node">
+                            <div class="note-head">Node 2</div>
+                            <div class="node-body">
+                                <div class="agent">
+                                    <div class="agent-icon"></div>
+                                    <div class="agent-text">Agent 1</div>
+                                </div>
+                                <div class="agent">
+                                    <div class="agent-icon"></div>
+                                    <div class="agent-text">Agent 2</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="node">
+                            <div class="note-head">Node 3</div>
+                            <div class="node-body"></div>
+                        </div>
+                    </div>
+                    <div class="external-container">
+                        <div class="durable-log">Durable Log</div>
+                        <div class="all-externals">
+                            <div class="external">External Tools</div>
+                            <div class="external">External APIs</div>
+                            <div class="external">External Agents</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="console-container">
+                <div class="main-container-head console-head">Global Console</div>
+                <div class="console-body"></div>
+            </div>
+        </div>
+        <div class="side-chaos-button-container">
+            <button class="chaos-button side-chaos-button" id="side-trigger-agent">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Trigger Agent</div>
+            </button>
+            <button class="chaos-button side-chaos-button" id="side-kill-node">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Kill Node</div>
+            </button>
+            <button class="chaos-button side-chaos-button" id="side-fail-interaction">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Fail Interaction</div>
+            </button>
+            <button class="chaos-button side-chaos-button" id="side-suspend-agent">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Suspend Agent</div>
+            </button>
+            <button class="chaos-button side-chaos-button" id="side-inject-defect">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Inject Defect</div>
+            </button>
+            <button class="chaos-button side-chaos-button" id="side-troubleshoot">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Troubleshoot</div>
+            </button>
+            <button class="chaos-button side-chaos-button" id="side-update-agent">
+                <div class="chaos-button-icon"></div>
+                <div class="chaos-button-text">Update Agent</div>
+            </button>
+        </div>
+        <div class="side-close-mask"></div>
+    </div>
+</body>
+</html>
+
+
+
+

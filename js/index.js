@@ -40,7 +40,7 @@ function loadChaosButtonLogic(){
             buttonIcon.classList.add("chaos-button-icon-active");
             button.classList.add("chaos-button-active");
             activeList[i] = true;
-            if(sideBar) setTimeout(chaosSideBar, 100);
+            //if(sideBar) setTimeout(chaosSideBar, 100);
 
             if(!allChaosButtonsActive(activeList)) return;
             const CTAbar = document.querySelector(".CTA-bar");

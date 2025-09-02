@@ -18,6 +18,36 @@ function initLoad(){
     }
 
     loadChaosButtonLogic();
+
+    let consoleLogs = [
+        "Agent-{id} created on Node {n} via built-in API",
+        "Node-{n} terminated; {x} agents recovered on Node {m} with no lost state",
+        "Agent-{id} external call failed; retried successfully with exactly-once guarantee",
+        "Agent-{id} suspended (awaiting approval) with state preserved",
+        "Agent-{id} crashed in sandbox; fault contained",
+        "Agent-{id} rewound to earlier state for safe replay",
+        "Version {v2} deployed; {x} agents migrated with zero downtime",
+    ];
+
+    let logIndex = 0;
+    let colors = [null, "red", "yellow", "green"];
+    setInterval(()=>{
+        const colorIndex = Math.floor(Math.random() * colors.length);
+        const logText = getConsoleTime() + " " + consoleLogs[logIndex];
+        consoleLog(logText, colors[colorIndex]);
+        logIndex++;
+        if(logIndex >= consoleLogs.length) logIndex = 0;
+    }, 1000)
+}
+
+/*--Console Logic------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+function getConsoleTime(){
+    const date = new Date();
+    const h = JSON.stringify(date.getHours()).padStart(2, "0");
+    const m = JSON.stringify(date.getMinutes()).padStart(2, "0");
+    const s = JSON.stringify(date.getSeconds()).padStart(2, "0");
+
+    return "["+h+":"+m+":"+s+"]";
 }
 function consoleLog(text, color){
     const consoleLogList = document.querySelector(".console-log-list");
@@ -40,6 +70,39 @@ function consoleLog(text, color){
         consoleLogBody.scrollTop = consoleLogBody.scrollHeight
     }, 0);
 }
+
+/*--Communication------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+function spawnOrb(type, originElement, vertical, position, nextPath){
+    const orb = document.createElement("div");
+    
+    switch(type){
+        default: orb.className = "orb"; break;
+        case "internal": orb.className = "orb orb-internal"; break;
+        case  "success": orb.className = "orb orb-success";  break;
+        case    "retry": orb.className = "orb orb-retry";    break;
+        case     "fail": orb.className = "orb orb-fail";     break;
+    }
+    if(vertical){
+        orb.style.setProperty("--orb-left", "0%");
+        orb.style.setProperty("--orb-top", "100%");
+        if(position > 0) orb.style.top = "5rem";
+    }
+    else{
+        orb.style.setProperty("--orb-left", "100%");
+        orb.style.setProperty("--orb-top", "0%");
+        if(position > 0) orb.style.left = "5rem";
+    }
+    originElement.appendChild(orb);
+    orb.onanimationend = ()=>{
+        orb.remove();
+        if(nextPath.length > 0){
+            const nextPathObject = nextPath.shift();
+            console.log(nextPathObject)
+            spawnOrb(type, nextPathObject.element, nextPathObject.vertical, nextPathObject.position, nextPath);
+        }
+    }
+}
+//➔
 
 /*--Chaos Buttons Logic------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadChaosButtonLogic(){
@@ -94,3 +157,12 @@ function allChaosButtonsActive(activeList){
     }
     return true;
 }
+
+setTimeout(()=>{
+pathH = document.querySelector(".h-path") 
+pathV = document.querySelector(".spine-path") 
+externalH = document.querySelector(".external-paths").querySelector(".v-path")
+}, 100)
+let pathH = document.querySelector(".h-path") 
+let pathV = document.querySelector(".spine-path") 
+let externalH

@@ -19,6 +19,27 @@ function initLoad(){
 
     loadChaosButtonLogic();
 }
+function consoleLog(text, color){
+    const consoleLogList = document.querySelector(".console-log-list");
+    const consoleLog = document.createElement("div");
+    consoleLog.className = "console-log";
+    consoleLog.innerText = text;
+    consoleLogList.appendChild(consoleLog);
+
+    if(color){
+        switch(color){
+            default:break;
+            case "red":    consoleLog.style.color = "rgb(231, 76, 60)";  break;
+            case "yellow": consoleLog.style.color = "rgb(241, 196, 15)"; break;
+            case "green":  consoleLog.style.color = "rgb(46, 204, 113)"; break;
+        }
+    }
+
+    setTimeout(()=>{
+        const consoleLogBody = document.querySelector(".console-body");
+        consoleLogBody.scrollTop = consoleLogBody.scrollHeight
+    }, 0);
+}
 
 /*--Chaos Buttons Logic------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadChaosButtonLogic(){

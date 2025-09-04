@@ -772,29 +772,11 @@ button:disabled:active{
     }
 }
 @media only screen and (min-width:1880px){
-    .main-container{
+    .page{
         transform:translate(-50%);
+        width:calc(1880px - 2rem);
         margin-left:50%;
-        width:1880px;
-    }
-    .chaos-buttons-container{
-        transform:translate(-50%);
-        margin-left:50%;
-        width:1880px;
-    }
-    .CTA-bar{
-        transform:translate(-50%, -50%);
-        margin-left:50%;
-        width:1880px;
-    }
-    .CTA-bar-extended{
-        transform:translate(-50%, 0%);
-        height:2.5rem;
-        opacity:1;
-    }
-
-    @keyframes CTA-bar-slide{
-        from {transform:translate(-50%, -50%); opacity:0; height:0rem;}
-        to   {transform:translate(-50%, 0%); opacity:1; height:2.5rem;}
+        margin-top:1rem;
+        min-height:100%;
     }
 }

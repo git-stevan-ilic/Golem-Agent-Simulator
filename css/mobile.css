@@ -1,0 +1,116 @@
+/*--Mobile Dispaly-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+@media only screen and (max-width:768px){
+    .side-chaos-button-container{
+        display:block;
+    }
+    .side-close-mask{
+        display:block;
+    }
+    .chaos-buttons-container .chaos-button{
+        display:none;
+    }
+    #side-menu{
+        display:block;
+    }
+    .CTA-bar{
+        font-size:0.8rem;
+    }
+}
+@media only screen and (max-width:780px){
+    .spine-path{
+        left:90%;
+    }
+    .node-paths{
+        transform:translate(0%);
+        width:calc(100% - 8rem);
+        left:8rem;
+    }
+    .h-path{
+        width:calc(90% - 1rem);
+    }
+    .h-path:nth-child(even){
+        transform:scaleX(1);
+    }
+}
+@media only screen and (max-width:1000px){
+    :root{
+        font-size:12px;
+    }
+    .main-container{
+        flex-direction:column;
+    }
+    .active-agent-container{
+        height:calc(100% - 2rem - 11rem - 3px);
+    }
+    .external-container{
+        padding-top:1rem;
+    }
+    .console-container{
+        width:100%;
+    }
+    .console-head{
+        border-top:1px solid var(--base-color-3);
+    } 
+    .console-body{
+        height:fit-content;
+        min-height:20rem;
+    }
+    .node{
+        width:29rem;
+    }
+    .note-head{
+        width:2rem;
+    }
+}
+@media only screen and (min-width:1000px){
+    .node-conatiner{
+        min-height:calc(100vh - 31rem);
+    }
+    .console-body{
+        height:fit-content;
+        min-height:calc(100vh - 13rem + 4px);
+    }
+}
+@media only screen and (max-width:1300px){
+    .chaos-button{
+        margin-right:0.5rem;
+        min-width:8.25rem;
+        height:3.5rem;
+    }
+}
+@media only screen and (min-width:1001px) and (max-width:1466px){
+    .spine-path{
+        left:90%;
+    }
+    .node-paths{
+        transform:translate(0%);
+        width:calc(100% - 8rem);
+        left:8rem;
+    }
+    .h-path{
+        width:calc(90% - 1rem);
+    }
+    .h-path:nth-child(even){
+        transform:scaleX(1);
+    }
+}
+@media only screen and (max-width:460px){
+    .spine-path{
+        transform:translateX(75%);
+    }
+    .node-paths{
+        width:calc(100% - 7rem);
+    }
+    .h-path{
+        width:calc(90% - 1rem);
+    }
+}
+@media only screen and (min-width:1880px){
+    .page{
+        transform:translate(-50%);
+        width:calc(1880px - 2rem);
+        margin-left:50%;
+        margin-top:1rem;
+        min-height:100%;
+    }
+}

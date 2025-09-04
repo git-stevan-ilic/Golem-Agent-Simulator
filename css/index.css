@@ -771,24 +771,21 @@ button:disabled:active{
         width:calc(90% - 1rem);
     }
 }
-@media only screen and (min-width:1910px){
+@media only screen and (min-width:1880px){
     .main-container{
         transform:translate(-50%);
         margin-left:50%;
-        width:1910px;
-    }
-    .console-container{
-        width:50rem;
+        width:1880px;
     }
     .chaos-buttons-container{
         transform:translate(-50%);
         margin-left:50%;
-        width:1910px;
+        width:1880px;
     }
     .CTA-bar{
         transform:translate(-50%, -50%);
         margin-left:50%;
-        width:1910px;
+        width:1880px;
     }
     .CTA-bar-extended{
         transform:translate(-50%, 0%);

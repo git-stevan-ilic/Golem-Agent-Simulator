@@ -53,6 +53,38 @@ function fadeOut(query, durration, callabck){
     }
 }
 
+/*--Console Logic------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+function getConsoleTime(){
+    const date = new Date();
+    const h = JSON.stringify(date.getHours()).padStart(2, "0");
+    const m = JSON.stringify(date.getMinutes()).padStart(2, "0");
+    const s = JSON.stringify(date.getSeconds()).padStart(2, "0");
+
+    return "["+h+":"+m+":"+s+"]";
+}
+function consoleLog(text, color){
+    const consoleLogList = document.querySelector(".console-log-list");
+    const consoleLog = document.createElement("div");
+    consoleLog.className = "console-log";
+    consoleLogList.appendChild(consoleLog);
+    consoleLog.innerText = getConsoleTime() + " " + text;
+
+    if(color){
+        switch(color){
+            default:break;
+            case "red":    consoleLog.style.color = "rgb(231, 76, 60)";  break;
+            case "yellow": consoleLog.style.color = "rgb(241, 196, 15)"; break;
+            case "green":  consoleLog.style.color = "rgb(46, 204, 113)"; break;
+            case "blue":   consoleLog.style.color = "rgb(80, 118, 246)"; break;
+        }
+    }
+
+    setTimeout(()=>{
+        const consoleLogBody = document.querySelector(".console-body");
+        consoleLogBody.scrollTop = consoleLogBody.scrollHeight
+    }, 0);
+}
+
 /*--Agent Logic--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadAgentLogic(){
     let agentID = 1, agentCount = 0, nodes = [
@@ -66,13 +98,21 @@ function loadAgentLogic(){
 
     let internalCallCountDown = Math.floor(Math.random() * 7) + 7;
     let retireCountDown = Math.floor(Math.random() * 11) + 13;
-    let agentInterval = setInterval(()=>{
+    let agentInterval = setInterval(agentLoop, 1000);
+
+    function agentLoop(){
         [retireCountDown, nodes] = retireAgentLogic(retireCountDown, nodes);
         internalCallCountDown = internalCallLogic(internalCallCountDown, agentCount, nodes);
         externalCallLogic(nodes);
-    }, 1000);
+    }
 
-
+    window.addEventListener("visibilitychange", ()=>{
+        if(document.hidden){
+            clearInterval(agentInterval);
+            return;
+        }
+        agentInterval = setInterval(agentLoop, 1000);
+    });
     window.addEventListener("add-agent", ()=>{
         [agentID, agentCount, nodes] = spawnAgent(agentID, agentCount, nodes);
     });
@@ -407,38 +447,6 @@ function orbAnimationEnd(orb, type, agentID, nodeIndexStart, nodeIndexEnd, endPo
     }
 }
 
-/*--Console Logic------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-function getConsoleTime(){
-    const date = new Date();
-    const h = JSON.stringify(date.getHours()).padStart(2, "0");
-    const m = JSON.stringify(date.getMinutes()).padStart(2, "0");
-    const s = JSON.stringify(date.getSeconds()).padStart(2, "0");
-
-    return "["+h+":"+m+":"+s+"]";
-}
-function consoleLog(text, color){
-    const consoleLogList = document.querySelector(".console-log-list");
-    const consoleLog = document.createElement("div");
-    consoleLog.className = "console-log";
-    consoleLogList.appendChild(consoleLog);
-    consoleLog.innerText = getConsoleTime() + " " + text;
-
-    if(color){
-        switch(color){
-            default:break;
-            case "red":    consoleLog.style.color = "rgb(231, 76, 60)";  break;
-            case "yellow": consoleLog.style.color = "rgb(241, 196, 15)"; break;
-            case "green":  consoleLog.style.color = "rgb(46, 204, 113)"; break;
-            case "blue":   consoleLog.style.color = "rgb(80, 118, 246)"; break;
-        }
-    }
-
-    setTimeout(()=>{
-        const consoleLogBody = document.querySelector(".console-body");
-        consoleLogBody.scrollTop = consoleLogBody.scrollHeight
-    }, 0);
-}
-
 /*--Chaos Buttons Logic------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadChaosButtonLogic(){
     let activeList = [];
@@ -453,7 +461,7 @@ function loadChaosButtonLogic(){
         button.onclick = ()=>{chaoButtonClick(false)};
         activeList.push(false);
 
-        function chaoButtonClick(sideBar){
+        function chaoButtonClick(){
             buttonIconSide.classList.add("chaos-button-icon-active");
             buttonSide.classList.add("chaos-button-active");
             buttonIcon.classList.add("chaos-button-icon-active");
@@ -489,10 +497,22 @@ function loadChaosButtonLogic(){
         sideCloseMask.style.pointerEvents = "none";
         barVisible = false;
     }
+
+    loadChaosButtonEvents();
 }
 function allChaosButtonsActive(activeList){
     for(let i = 0; i < activeList.length; i++){
         if(!activeList[i]) return false;
     }
     return true;
+}
+function loadChaosButtonEvents(){
+    const chaosID = [
+        "trigger-agent", "kill-node", "fail-interaction", "suspend-agent",
+        "inject-defect", "troubleshoot", "update-agent"
+    ];
+    for(let i = 0; i < chaosID.length; i++){
+        document.getElementById(chaosID[i]).onclick = ()=>{}
+        document.getElementById("side-"+chaosID[i]).onclick = ()=>{}
+    }
 }

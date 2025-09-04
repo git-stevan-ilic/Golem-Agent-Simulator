@@ -17,7 +17,7 @@
     align-items:center;
     display:flex;
 
-    animation:fade-in ease-in-out 0.1s;
+    animation:agent-spawn ease-in-out 0.2s;
 }
 .agent-icon{
     background-image:url("../assets/icons/running.png");
@@ -42,6 +42,11 @@
     width:calc(100% - 6rem);
 }
 
+@keyframes agent-spawn{
+    0%   {background-color:var(--accent-green); opacity:0; transform:scale(0.5); box-shadow:0px 0px 1rem var(--accent-green);}
+    80%  {background-color:var(--base-color-3); opacity:1; transform:scale(1.1); box-shadow:none;}
+    100% {background-color:var(--base-color-3); opacity:1; transform:scale(1); box-shadow:none;}
+}
 @keyframes agent-shrink{
     to {width:0rem;}
 }
@@ -101,7 +106,7 @@
     align-items:center;
     display:flex;
 }
-.note-head{
+.node-head{
     writing-mode:sideways-lr;
     margin-left:0.5rem;
     flex-shrink:0;

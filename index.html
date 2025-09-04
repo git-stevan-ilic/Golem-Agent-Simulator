@@ -134,31 +134,14 @@ async fn main(){
                 <div class="active-agent-container">
                     <div class="path-container">
                         <div class="spine-path"></div>
-                        <div class="node-paths">
-                            <div class="h-path" id="h-path-1"></div>
-                            <div class="h-path" id="h-path-2"></div>
-                            <div class="h-path" id="h-path-3"></div>
-                        </div>
+                        <div class="node-paths"></div>
                         <div class="external-paths">
                             <div class="v-path" id="external-tools"></div>
                             <div class="v-path" id="external-apis"></div>
                             <div class="v-path" id="external-agents"></div>
                         </div>
                     </div>
-                    <div class="node-conatiner">
-                        <div class="node" id="node-1">
-                            <div class="note-head">Node 1</div>
-                            <div class="node-body"></div>
-                        </div>
-                        <div class="node" id="node-2">
-                            <div class="note-head">Node 2</div>
-                            <div class="node-body"></div>
-                        </div>
-                        <div class="node" id="node-3">
-                            <div class="note-head">Node 3</div>
-                            <div class="node-body"></div>
-                        </div>
-                    </div>
+                    <div class="node-conatiner"></div>
                     <div class="external-container">
                         <div class="durable-log">Durable Log</div>
                         <div class="all-externals">
@@ -207,6 +190,16 @@ async fn main(){
             </button>
         </div>
         <div class="side-close-mask"></div>
+    </div>
+    <div class="mask" id="pop-up-mask">
+        <div class="window" id="pop-up-window">
+            <div class="window-body">
+                <div class="pop-up-text"></div>
+            </div>
+            <div class="window-foot">
+                <button id="pop-up-close">Close</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>

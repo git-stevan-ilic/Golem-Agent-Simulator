@@ -87,15 +87,11 @@ function consoleLog(text, color){
 
 /*--Agent Logic--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadAgentLogic(){
-    let agentID = 1, agentCount = 0, nodes = [
-        {id:"node-1", agents:[]},
-        {id:"node-2", agents:[]},
-        {id:"node-3", agents:[]}
-    ];
-    for(let i = 0; i < 5; i++){
-        [agentID, agentCount, nodes] = spawnAgent(agentID, agentCount, nodes);
-    }
+    let agentID = 1, nodeID = 1, agentCount = 0, nodes = [];
+    for(let i = 0; i < 3; i++) [nodeID, nodes] = spawnNode(nodeID, nodes);
+    for(let i = 0; i < 5; i++) [nodeID, agentID, agentCount, nodes] = spawnAgent(nodeID, agentID, agentCount, nodes);
 
+    let loopPopupStoped = false;
     let internalCallCountDown = Math.floor(Math.random() * 7) + 7;
     let retireCountDown = Math.floor(Math.random() * 11) + 13;
     let agentInterval = setInterval(agentLoop, 1000);
@@ -106,15 +102,39 @@ function loadAgentLogic(){
         externalCallLogic(nodes);
     }
 
+    window.addEventListener("pause-loop", ()=>{
+        const allExternals = document.querySelectorAll(".external");
+        const allAgents = document.querySelectorAll(".agent");
+        const allOrbs = document.querySelectorAll(".orb");
+
+        for(let i = 0; i < allExternals.length; i++) allExternals[i].style.animationPlayState = "paused";
+        for(let i = 0; i < allAgents.length; i++) allAgents[i].style.animationPlayState = "paused";
+        for(let i = 0; i < allOrbs.length; i++) allOrbs[i].style.animationPlayState = "paused";
+
+        clearInterval(agentInterval);
+        loopPopupStoped = true;
+    });
+    window.addEventListener("resume-loop", ()=>{
+        const allExternals = document.querySelectorAll(".external");
+        const allAgents = document.querySelectorAll(".agent");
+        const allOrbs = document.querySelectorAll(".orb");
+
+        for(let i = 0; i < allExternals.length; i++) allExternals[i].style.animationPlayState = "running";
+        for(let i = 0; i < allAgents.length; i++) allAgents[i].style.animationPlayState = "running";
+        for(let i = 0; i < allOrbs.length; i++) allOrbs[i].style.animationPlayState = "running";
+
+        agentInterval = setInterval(agentLoop, 1000);
+        loopPopupStoped = false;
+    });
     window.addEventListener("visibilitychange", ()=>{
         if(document.hidden){
             clearInterval(agentInterval);
             return;
         }
-        agentInterval = setInterval(agentLoop, 1000);
+        if(!loopPopupStoped) agentInterval = setInterval(agentLoop, 1000);
     });
     window.addEventListener("add-agent", ()=>{
-        [agentID, agentCount, nodes] = spawnAgent(agentID, agentCount, nodes);
+        [nodeID, agentID, agentCount, nodes] = spawnAgent(nodeID, agentID, agentCount, nodes);
     });
     window.addEventListener("remove-agent", (e)=>{
         const agentIndex = e.detail.agentIndex;
@@ -122,14 +142,65 @@ function loadAgentLogic(){
 
         nodes[nodeIndex].agents.splice(agentIndex, 1);
         agentCount--; 
-        console.log(nodes, agentCount) 
     });
+
+
+
+    window.addEventListener("kill-node", ()=>{
+        
+    });
+    window.addEventListener("fail-interaction", ()=>{
+        
+    });
+    window.addEventListener("suspend-agent", ()=>{
+        
+    });
+    window.addEventListener("inject-defect", ()=>{
+        
+    });
+    window.addEventListener("troubleshoot", ()=>{
+        
+    });
+    window.addEventListener("update-agent", ()=>{
+        
+    });
+
+
+
     window.addEventListener("contextmenu", (e)=>{
         e.preventDefault();
         console.log(nodes, agentCount, agentID);
     });
 }
-function spawnAgent(agentID, agentCount, nodes){
+function spawnNode(nodeID, nodes){
+    const nodeConatiner = document.querySelector(".node-conatiner");
+    const nodeBody = document.createElement("div");
+    const nodeHead = document.createElement("div");
+    const node = document.createElement("div");
+
+    nodeBody.className = "node-body";
+    nodeHead.className = "node-head";
+    node.className = "node";
+
+    nodeHead.innerText = "Node " + nodeID;
+    node.id = "node-" + nodeID;
+
+    node.appendChild(nodeHead);
+    node.appendChild(nodeBody);
+    nodeConatiner.appendChild(node);
+
+    const nodePaths = document.querySelector(".node-paths");
+    const hPath = document.createElement("div");
+    hPath.id = "h-path-"+nodeID;
+    hPath.className = "h-path";
+    nodePaths.appendChild(hPath);
+
+    nodes.push({id:"node-"+nodeID, agents:[]});
+    nodeID++;
+
+    return [nodeID, nodes];
+}
+function spawnAgent(nodeID, agentID, agentCount, nodes){
     const externalCallMaxTime = Math.floor(Math.random() * 5) + 5;
     const newAgent = {
         id:agentID,
@@ -137,20 +208,27 @@ function spawnAgent(agentID, agentCount, nodes){
         externalCallTime:randomInteger(0, externalCallMaxTime)
     }
 
-    const allAgents = [];
-    for(let i = 0; i < nodes.length; i++) allAgents.push(nodes[i].agents);
-    const minLength = Math.min(...allAgents.map(a => a.length));
+    if(checkNewNodeRequired(nodes)){
+        const allAgents = [];
+        for(let i = 0; i < nodes.length; i++) allAgents.push(nodes[i].agents);
+        const minLength = Math.min(...allAgents.map(a => a.length));
 
-    const shortestArrays = allAgents.map((a, i)=>({array:a, index:i+1})).filter(a => a.array.length === minLength);
-    const chosen = shortestArrays[Math.floor(Math.random() * shortestArrays.length)];
-    newAgent.nodeIndex = chosen.index;
-    chosen.array.push(newAgent);
-
-    consoleLog("Agent-{"+agentID+"} created on Node {"+chosen.index+"} via built-in API");
-    generateAgentDIV(chosen.index, agentID);
+        const shortestArrays = allAgents.map((a, i)=>({array:a, index:i+1})).filter(a => a.array.length === minLength);
+        const chosen = shortestArrays[Math.floor(Math.random() * shortestArrays.length)];
+        newAgent.nodeIndex = chosen.index;
+        chosen.array.push(newAgent); 
+    }
+    else{
+        [nodeID, nodes] = spawnNode(nodeID, nodes);
+        nodes[nodes.length-1].agents.push(newAgent);
+        newAgent.nodeIndex = nodeID - 1;
+    }
+    
+    consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
+    generateAgentDIV(newAgent.nodeIndex, agentID);
 
     agentCount++; agentID++;
-    return [agentID, agentCount, nodes];
+    return [nodeID, agentID, agentCount, nodes];
 }
 function generateAgentDIV(nodeIndex, agentID){
     const nodeDiv = document.getElementById("node-"+nodeIndex);
@@ -168,6 +246,16 @@ function generateAgentDIV(nodeIndex, agentID){
     agentDiv.appendChild(agentDivIcon);
     agentDiv.appendChild(agentDivText);
     nodeDivBody.appendChild(agentDiv);
+}
+function checkNewNodeRequired(nodes){
+    let hasRoom = false;
+    for(let i = 0; i < nodes.length; i++){
+        if(nodes[i].agents.length < 2){
+            hasRoom = true;
+            break;
+        }
+    }
+    return hasRoom;
 }
 function retireAgentLogic(retireCountDown, nodes){
     retireCountDown--;
@@ -512,7 +600,126 @@ function loadChaosButtonEvents(){
         "inject-defect", "troubleshoot", "update-agent"
     ];
     for(let i = 0; i < chaosID.length; i++){
-        document.getElementById(chaosID[i]).onclick = ()=>{}
-        document.getElementById("side-"+chaosID[i]).onclick = ()=>{}
+        document.getElementById(chaosID[i]).onclick = ()=>{chaosTriggerButton(i)}
+        document.getElementById("side-"+chaosID[i]).onclick = ()=>{chaosTriggerButton(i)}
     }
+}
+function chaosTriggerButton(index){
+    const innerHTML = getChaosPopupText(index);
+    const popUpText = document.querySelector(".pop-up-text");
+    popUpText.innerHTML = innerHTML;
+
+    fadeIn("#pop-up-mask", "block", 0.1, ()=>{
+        const pauseLoopEvent = new Event("pause-loop");
+        window.dispatchEvent(pauseLoopEvent);
+    });
+
+    const chaosEvents = [
+        "add-agent", "kill-node", "fail-interaction", "suspend-agent",
+        "inject-defect", "troubleshoot", "update-agent"
+    ];
+
+    function closeModal(){
+        fadeOut("#pop-up-mask", 0.1, ()=>{
+            const resumeLoopEvent = new Event("resume-loop");
+            window.dispatchEvent(resumeLoopEvent);
+
+            const chaosEvent = new Event(chaosEvents[index]);
+            window.dispatchEvent(chaosEvent);
+        });
+    }
+
+    document.getElementById("pop-up-window").onclick = (e)=>{e.stopPropagation()}
+    document.getElementById("pop-up-close").onclick = closeModal;
+    document.getElementById("pop-up-mask").onclick = closeModal;
+}
+function getChaosPopupText(index){
+    const allHTMLs = [
+        `
+        <b>Outcome:</b><br> New agent created
+        instantly via Golem's built-in
+        API — no extra setup.<br><br>
+        <b>Guarantee:</b><br> Starts isolated,
+        logged, and ready in
+        milliseconds.<br><br>
+        <b>Infrastructure You Avoid:</b><br>
+        Web servers · Auth plumbing ·
+        Message brokers
+        `,
+        `
+        <b>Outcome:</b><br> Node goes offline;
+        its agents resume
+        automatically on a healthy
+        node.<br><br>
+        <b>Guarantee:</b><br> No lost state, no
+        duplicate work.<br><br>
+        <b>Infrastructure You Avoid:</b><br>
+        Leader election/consensus ·
+        Idempotency tables
+        `,
+        `
+        <b>Outcome:</b><br> External call
+        (API/tool/message) fails, then
+        retries automatically.<br><br>
+        <b>Guarantee:</b><br> Exactly-once
+        execution for external side
+        effects; durable delivery for
+        internal messages — no
+        double charges, no missed
+        signals.<br><br>
+        <b>Infrastructure You Avoid:</b><br>
+        Retry queues · Dead-letter
+        handling ·
+        Backoff/orchestration code
+        `,
+        `
+        <b>Outcome:</b><br> Running agent
+        pauses without incurring cost.<br><br>
+        <b>Guarantee:</b><br> Unlimited pause
+        with durable state; resumes
+        instantly. Supports human
+        approval, scheduled
+        wake-ups, and idle standby.<br><br>
+        <b>Infrastructure You Avoid:</b><br>
+        Cron services · Polling loops ·
+        Custom timers
+        `,
+        `
+        <b>Outcome:</b><br> Faulty agent
+        contained; other agents
+        unaffected.<br><br>
+        <b>Guarantee:</b><br> Process, data,
+        and permission isolation —
+        one agent can't crash, read, or
+        act as another.<br><br>
+        <b>Infrastructure You Avoid:</b><br>
+        Container hardening ·
+        RBAC/least-privilege wiring
+        `,
+        `
+        <b>Outcome:</b><br> Full execution
+        history appears with rewind
+        and safe replay<br><br>
+        <b>Guarantee:</b><br> Roll back to an
+        earlier point to correct
+        dead-ends and errant AI
+        decisions.<br><br>
+        <b>Infrastructure You Avoid:</b><br>
+        Distributed tracing stack ·
+        One-off debug tooling
+        `,
+        `
+        <b>Outcome:</b><br> Ship a new version
+        side-by-side or migrate live
+        agents without downtime.<br><br>
+        <b>Guarantee:</b><br> Zero-downtime
+        upgrades with controlled
+        roll-forward.<br><br>
+        <b>Infrastructure You Avoid:</b><br>
+        Rolling-deploy scripts ·
+        Drain/coordination logic
+        `
+    ];
+
+    return allHTMLs[index]
 }

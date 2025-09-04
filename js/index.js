@@ -61,153 +61,34 @@ function loadAgentLogic(){
         {id:"node-3", agents:[]}
     ];
     for(let i = 0; i < 5; i++){
-        spawnAgent(agentID, nodes);
-        agentCount++;
-        agentID++;
+        [agentID, agentCount, nodes] = spawnAgent(agentID, agentCount, nodes);
     }
 
     let internalCallCountDown = Math.floor(Math.random() * 7) + 7;
     let retireCountDown = Math.floor(Math.random() * 11) + 13;
     let agentInterval = setInterval(()=>{
-        for(let i = 0; i < nodes.length; i++){
-            for(let j = 0; j < nodes[i].agents.length; j++){
-                const agent = nodes[i].agents[j];
-                agent.externalCallTime++;
-                if(agent.externalCallTime >= agent.externalCallMaxTime){
-                    agent.externalCallTime = 0;
-
-                    const originElement = document.querySelectorAll(".h-path")[(agent.nodeIndex - 1)];
-                    const agentNode = document.getElementById("node-"+agent.nodeIndex);
-                    if(originElement && agentNode){
-                        let position = 0;
-                        const agentNodeBody = agentNode.children[1];
-                        for(let k = 0; k < agentNodeBody.children.length; k++){
-                            if(agentNodeBody.children[k].id === "agent-" + agent.id){
-                                position = k;
-                            }
-                        }
-                        const mode = getPathMode();
-                        if(mode === 0 && (agent.nodeIndex - 1) % 2 === 1) position = 1 - position;
-
-                        const externalConsoleMessages = ["External Tools", "External APIs", "External Agents"];
-                        const externalPaths = ["#external-tools", "#external-apis", "#external-agents"];
-                        const externalPathIndex = Math.floor(Math.random() * externalPaths.length);
-                        const external = externalPaths[externalPathIndex];
-
-                        const logMessage = "Agent-{"+agent.id+"} on Node {"+agent.nodeIndex+"} called "+externalConsoleMessages[externalPathIndex];
-                        let nextPath = [
-                            {element:".spine-path", vertical:true, startPosition:(agent.nodeIndex - 1), endPosition:null},
-                            {element:external, vertical:true, startPosition:0, endPosition:null}
-                        ];
-                        spawnOrb("success", agent.id, agent.nodeIndex, null, originElement, false, position, null, nextPath, logMessage, externalPathIndex);
-                    }
-                }
-            }
-        }
-        retireCountDown--;
-        if(retireCountDown <= 0){
-            retireCountDown = Math.floor(Math.random() * 11) + 13;
-
-            if(nodes.length > 0){
-                const nodeIndex = randomInteger(0, nodes.length-1);
-                const retiredAgentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
-                const retiredAgent = nodes[nodeIndex].agents[retiredAgentIndex]
-                if(retiredAgent){
-                    const retiredOrbsNotStarted = document.querySelectorAll("[data-agent-start='"+retiredAgent.id+"']");
-                    const retiredAgentDIV = document.getElementById("agent-"+retiredAgent.id);
-
-                    for(let k = retiredOrbsNotStarted.length-1; k >= 0; k--) retiredOrbsNotStarted[k].remove();
-                    nodes[nodeIndex].agents.splice(retiredAgentIndex, 1);
-                    agentCount--;
-
-                    consoleLog("Agent-{"+retiredAgent.id+"} retired on Node {"+(nodeIndex + 1)+"} via built-in API");
-                    fadeOut("#agent-"+retiredAgent.id, 0.1, ()=>{
-                        retiredAgentDIV.style.opacity = 0;
-                        retiredAgentDIV.style.display = "flex";
-                        retiredAgentDIV.style.animation = "agent-shrink ease-in-out 0.1s";
-                        retiredAgentDIV.onanimationend = ()=>{
-                            retiredAgentDIV.remove();
-                            setTimeout(()=>{
-                                spawnAgent(agentID, nodes);
-                                agentCount++;
-                                agentID++;
-                            }, 250);
-                        }
-                    });
-                }
-            }
-        }
-        internalCallCountDown--;
-        if(internalCallCountDown <= 0){
-            internalCallCountDown = Math.floor(Math.random() * 7) + 7;
-        
-            if(agentCount >= 2){
-                let loopNum = 0, agentIndex1, agentIndex2, agentDiv1, agent1, agent2;
-                while(true){
-                    loopNum++
-                    if(loopNum > 100) break;
-                    agentIndex1 = randomInteger(0, agentCount-1);
-                    agentIndex2 = randomInteger(0, agentCount-1);
-                    agentDiv1 = document.getElementById("agent-"+agentIndex1);
-                    if(agentIndex1 !== agentIndex2 && agentDiv1) break;
-                }
-
-                if(agentDiv1){
-                    for(let i = 0; i < nodes.length; i++){
-                        for(let j = 0; j < nodes[i].agents.length; j++){
-                            const agent = nodes[i].agents[j];
-                            if(agent.id === agentIndex1) agent1 = agent;
-                            if(agent.id === agentIndex2) agent2 = agent;
-                        }
-                    }
-                    if(agent1 && agent2){
-                        agentDiv1.style.animation = "internal-pulse ease-in-out 0.5s";
-                        agentDiv1.onanimationend = ()=>{
-                            agentDiv1.style.animation = "none";
-                            agentDiv1.onanimationend = null;
-                        }
-
-                        const originElement = document.querySelectorAll(".h-path")[(agent1.nodeIndex - 1)];
-                        const originAgentNode = document.getElementById("node-"+agent1.nodeIndex);
-                        const destAgentNode = document.getElementById("node-"+agent2.nodeIndex);
-                        const originAgentNodeBody = originAgentNode.children[1];
-                        const destAgentNodeBody = destAgentNode.children[1];
-                        
-                        let startPosition = 0, endPosition = 0;
-                        for(let k = 0; k < originAgentNodeBody.children.length; k++){
-                            if(originAgentNodeBody.children[k].id === "agent-" + agent1.id){
-                                startPosition = k;
-                            }
-                        }
-                        for(let k = 0; k < destAgentNodeBody.children.length; k++){
-                            if(destAgentNodeBody.children[k].id === "agent-" + agent2.id){
-                                endPosition = k;
-                            }
-                        }
-
-                        const mode = getPathMode();
-                        if(mode === 0 && (agent1.nodeIndex - 1) % 2 === 1) startPosition = 1 - startPosition;
-                        if(mode === 0 && (agent2.nodeIndex - 1) % 2 === 1) endPosition = 1 - endPosition;
-                        let nextPath = [];
-                        if(agent1.nodeIndex !== agent2.nodeIndex){
-                            nextPath.push({element:".spine-path", vertical:true, startPosition:(agent1.nodeIndex - 1), endPosition:(agent2.nodeIndex - 1)});
-                            nextPath.push({element:"#h-path-"+agent2.nodeIndex, vertical:false, startPosition:0, endPosition:endPosition});
-                            spawnOrb("internal", agent1.id, agent1.nodeIndex, agent2.nodeIndex, originElement, false, startPosition, null, nextPath, null, null);
-                        }
-                        else spawnOrb("internal", agent1.id, agent1.nodeIndex, agent2.nodeIndex, originElement, false, startPosition, endPosition, nextPath, null, null);
-                        consoleLog("Agent-{"+agent1.id+"} on Node {"+agent1.nodeIndex+"} sent an internal message to Agent-{"+agent2.id+"} on Node {"+agent2.nodeIndex+"}");
-                    }
-                }
-            }
-        }
+        [retireCountDown, nodes] = retireAgentLogic(retireCountDown, nodes);
+        internalCallCountDown = internalCallLogic(internalCallCountDown, agentCount, nodes);
+        externalCallLogic(nodes);
     }, 1000);
 
-    window.oncontextmenu = (e)=>{
+
+    window.addEventListener("add-agent", ()=>{
+        [agentID, agentCount, nodes] = spawnAgent(agentID, agentCount, nodes);
+    });
+    window.addEventListener("remove-agent", (e)=>{
+        const agentIndex = e.detail.agentIndex;
+        const nodeIndex = e.detail.nodeIndex;
+
+        nodes[nodeIndex].agents.splice(agentIndex, 1);
+        agentCount--;  
+    });
+    window.addEventListener("contextmenu", (e)=>{
         e.preventDefault();
-        console.log(nodes);
-    }
+        console.log(nodes, agentCount, agentID);
+    });
 }
-function spawnAgent(agentID, nodes){
+function spawnAgent(agentID, agentCount, nodes){
     const externalCallMaxTime = Math.floor(Math.random() * 5) + 5;
     const newAgent = {
         id:agentID,
@@ -223,9 +104,12 @@ function spawnAgent(agentID, nodes){
     const chosen = shortestArrays[Math.floor(Math.random() * shortestArrays.length)];
     newAgent.nodeIndex = chosen.index;
     chosen.array.push(newAgent);
+    agentCount++;
+    agentID++;
 
     consoleLog("Agent-{"+agentID+"} created on Node {"+chosen.index+"} via built-in API");
     generateAgentDIV(chosen.index, agentID);
+    return [agentID, agentCount, nodes];
 }
 function generateAgentDIV(nodeIndex, agentID){
     const nodeDiv = document.getElementById("node-"+nodeIndex);
@@ -243,6 +127,144 @@ function generateAgentDIV(nodeIndex, agentID){
     agentDiv.appendChild(agentDivIcon);
     agentDiv.appendChild(agentDivText);
     nodeDivBody.appendChild(agentDiv);
+}
+function retireAgentLogic(retireCountDown, nodes){
+    retireCountDown--;
+    if(retireCountDown > 0) return [retireCountDown, nodes];
+
+    retireCountDown = Math.floor(Math.random() * 11) + 13;
+    if(nodes.length <= 0) return [retireCountDown, nodes];
+
+    const nodeIndex = randomInteger(0, nodes.length-1);
+    const retiredAgentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
+    const retiredAgent = nodes[nodeIndex].agents[retiredAgentIndex]
+            
+    if(!retiredAgent) return [retireCountDown, nodes];
+    const retiredOrbsNotStarted = document.querySelectorAll("[data-agent-start='"+retiredAgent.id+"']");
+    const retiredAgentDIV = document.getElementById("agent-"+retiredAgent.id);        
+    for(let k = retiredOrbsNotStarted.length-1; k >= 0; k--) retiredOrbsNotStarted[k].remove();
+                
+    consoleLog("Agent-{"+retiredAgent.id+"} retired on Node {"+(nodeIndex + 1)+"} via built-in API");
+    fadeOut("#agent-"+retiredAgent.id, 0.1, ()=>{
+        retiredAgentDIV.style.opacity = 0;
+        retiredAgentDIV.style.display = "flex";
+        retiredAgentDIV.style.animation = "agent-shrink ease-in-out 0.1s";
+        retiredAgentDIV.onanimationend = ()=>{
+            retiredAgentDIV.remove();
+
+            const agentData = {nodeIndex:nodeIndex, agentIndex:retiredAgentIndex}
+            const removeAgentEvent = new CustomEvent("remove-agent", {detail:agentData});
+            window.dispatchEvent(removeAgentEvent);
+
+            setTimeout(()=>{
+                const addAgentEvent = new Event("add-agent");
+                window.dispatchEvent(addAgentEvent);
+            }, 250);
+        }
+    });
+
+    return [retireCountDown, nodes];
+}
+function externalCallLogic(nodes){
+    for(let i = 0; i < nodes.length; i++){
+        for(let j = 0; j < nodes[i].agents.length; j++){
+            const agent = nodes[i].agents[j];
+            agent.externalCallTime++;
+
+            if(agent.externalCallTime < agent.externalCallMaxTime) continue;
+            agent.externalCallTime = 0;
+
+            const originElement = document.querySelectorAll(".h-path")[(agent.nodeIndex - 1)];
+            const agentNode = document.getElementById("node-"+agent.nodeIndex);
+            if(!originElement || !agentNode) continue;
+
+            let position = 0;
+            const agentNodeBody = agentNode.children[1];
+            for(let k = 0; k < agentNodeBody.children.length; k++){
+                if(agentNodeBody.children[k].id === "agent-" + agent.id){
+                    position = k;
+                }
+            }
+            const mode = getPathMode();
+            if(mode === 0 && (agent.nodeIndex - 1) % 2 === 1) position = 1 - position;
+
+            const externalConsoleMessages = ["External Tools", "External APIs", "External Agents"];
+            const externalPaths = ["#external-tools", "#external-apis", "#external-agents"];
+            const externalPathIndex = Math.floor(Math.random() * externalPaths.length);
+            const external = externalPaths[externalPathIndex];
+
+            const logMessage = "Agent-{"+agent.id+"} on Node {"+agent.nodeIndex+"} called "+externalConsoleMessages[externalPathIndex];
+            let nextPath = [
+                {element:".spine-path", vertical:true, startPosition:(agent.nodeIndex - 1), endPosition:null},
+                {element:external, vertical:true, startPosition:0, endPosition:null}
+            ];
+            spawnOrb("success", agent.id, agent.nodeIndex, null, originElement, false, position, null, nextPath, logMessage, externalPathIndex);
+        }
+    }
+}
+function internalCallLogic(internalCallCountDown, agentCount, nodes){
+    internalCallCountDown--;
+    if(internalCallCountDown > 0) return internalCallCountDown;
+
+    internalCallCountDown = Math.floor(Math.random() * 7) + 7;
+    if(agentCount < 2) return internalCallCountDown;
+
+    let loopNum = 0, agentIndex1, agentIndex2, agentDiv1, agent1, agent2;
+    while(true){
+        loopNum++
+        if(loopNum > 100) break;
+        agentIndex1 = randomInteger(0, agentCount-1);
+        agentIndex2 = randomInteger(0, agentCount-1);
+        agentDiv1 = document.getElementById("agent-"+agentIndex1);
+        if(agentIndex1 !== agentIndex2 && agentDiv1) break;
+    }
+
+    if(!agentDiv1) return internalCallCountDown;
+    for(let i = 0; i < nodes.length; i++){
+        for(let j = 0; j < nodes[i].agents.length; j++){
+            const agent = nodes[i].agents[j];
+            if(agent.id === agentIndex1) agent1 = agent;
+            if(agent.id === agentIndex2) agent2 = agent;
+        }
+    }
+        
+    if(!agent1 || !agent2) return internalCallCountDown;
+    agentDiv1.style.animation = "internal-pulse ease-in-out 0.5s";
+    agentDiv1.onanimationend = ()=>{
+        agentDiv1.style.animation = "none";
+        agentDiv1.onanimationend = null;
+    }
+
+    const originElement = document.querySelectorAll(".h-path")[(agent1.nodeIndex - 1)];
+    const originAgentNode = document.getElementById("node-"+agent1.nodeIndex);
+    const destAgentNode = document.getElementById("node-"+agent2.nodeIndex);
+    const originAgentNodeBody = originAgentNode.children[1];
+    const destAgentNodeBody = destAgentNode.children[1];
+                        
+    let startPosition = 0, endPosition = 0;
+    for(let k = 0; k < originAgentNodeBody.children.length; k++){
+        if(originAgentNodeBody.children[k].id === "agent-" + agent1.id){
+            startPosition = k;
+        }
+    }
+    for(let k = 0; k < destAgentNodeBody.children.length; k++){
+        if(destAgentNodeBody.children[k].id === "agent-" + agent2.id){
+            endPosition = k;
+        }
+    }
+
+    const mode = getPathMode();
+    if(mode === 0 && (agent1.nodeIndex - 1) % 2 === 1) startPosition = 1 - startPosition;
+    if(mode === 0 && (agent2.nodeIndex - 1) % 2 === 1) endPosition = 1 - endPosition;
+    let nextPath = [];
+    if(agent1.nodeIndex !== agent2.nodeIndex){
+        nextPath.push({element:".spine-path", vertical:true, startPosition:(agent1.nodeIndex - 1), endPosition:(agent2.nodeIndex - 1)});
+        nextPath.push({element:"#h-path-"+agent2.nodeIndex, vertical:false, startPosition:0, endPosition:endPosition});
+        spawnOrb("internal", agent1.id, agent1.nodeIndex, agent2.nodeIndex, originElement, false, startPosition, null, nextPath, null, null);
+    }
+    else spawnOrb("internal", agent1.id, agent1.nodeIndex, agent2.nodeIndex, originElement, false, startPosition, endPosition, nextPath, null, null);
+    consoleLog("Agent-{"+agent1.id+"} on Node {"+agent1.nodeIndex+"} sent an internal message to Agent-{"+agent2.id+"} on Node {"+agent2.nodeIndex+"}");
+    return internalCallCountDown;
 }
 
 /*--Orb Logic----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -406,6 +428,7 @@ function consoleLog(text, color){
             case "red":    consoleLog.style.color = "rgb(231, 76, 60)";  break;
             case "yellow": consoleLog.style.color = "rgb(241, 196, 15)"; break;
             case "green":  consoleLog.style.color = "rgb(46, 204, 113)"; break;
+            case "blue":   consoleLog.style.color = "rgb(80, 118, 246)"; break;
         }
     }
 
@@ -435,7 +458,6 @@ function loadChaosButtonLogic(){
             buttonIcon.classList.add("chaos-button-icon-active");
             button.classList.add("chaos-button-active");
             activeList[i] = true;
-            //if(sideBar) setTimeout(chaosSideBar, 100);
 
             if(!allChaosButtonsActive(activeList)) return;
             const CTAbar = document.querySelector(".CTA-bar");

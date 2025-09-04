@@ -99,16 +99,7 @@ function loadAgentLogic(){
                             {element:".spine-path", vertical:true, startPosition:(agent.nodeIndex - 1), endPosition:null},
                             {element:external, vertical:true, startPosition:0, endPosition:null}
                         ];
-                        spawnOrb("success", agent.nodeIndex, null, originElement, false, position, null, nextPath, logMessage, externalPathIndex);
-
-                        /*const agentDiv = document.getElementById("agent-" + agent.id);
-                        agentDiv.style.animationDelay = (agent.nodeIndex - 1) * 0.5 + position * 0.25 + "s";
-                        agentDiv.style.animation = "external-pulse ease-in-out 0.5s";
-                        agentDiv.onanimationend = ()=>{
-                            agentDiv.style.animationDelay = "0s";
-                            agentDiv.style.animation = "none";
-                            agentDiv.onanimationend = null;
-                        }*/
+                        spawnOrb("success", agent.id, agent.nodeIndex, null, originElement, false, position, null, nextPath, logMessage, externalPathIndex);
                     }
                 }
             }
@@ -122,7 +113,10 @@ function loadAgentLogic(){
                 const retiredAgentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
                 const retiredAgent = nodes[nodeIndex].agents[retiredAgentIndex]
                 if(retiredAgent){
+                    const retiredOrbsNotStarted = document.querySelectorAll("[data-agent-start='"+retiredAgent.id+"']");
                     const retiredAgentDIV = document.getElementById("agent-"+retiredAgent.id);
+
+                    for(let k = retiredOrbsNotStarted.length-1; k >= 0; k--) retiredOrbsNotStarted[k].remove();
                     nodes[nodeIndex].agents.splice(retiredAgentIndex, 1);
                     agentCount--;
 
@@ -143,23 +137,22 @@ function loadAgentLogic(){
                 }
             }
         }
-        //internalCallCountDown--
+        internalCallCountDown--;
         if(internalCallCountDown <= 0){
             internalCallCountDown = Math.floor(Math.random() * 7) + 7;
-           
+        
             if(agentCount >= 2){
-                let loopNum = 0, agentIndex1, agentIndex2, agentDiv1, agentDiv2, agent1, agent2;
+                let loopNum = 0, agentIndex1, agentIndex2, agentDiv1, agent1, agent2;
                 while(true){
                     loopNum++
                     if(loopNum > 100) break;
                     agentIndex1 = randomInteger(0, agentCount-1);
                     agentIndex2 = randomInteger(0, agentCount-1);
                     agentDiv1 = document.getElementById("agent-"+agentIndex1);
-                    agentDiv2 = document.getElementById("agent-"+agentIndex2);
-                    if(agentIndex1 !== agentIndex2 && agentDiv1 && agentDiv2) break;
+                    if(agentIndex1 !== agentIndex2 && agentDiv1) break;
                 }
 
-                if(agentDiv1 && agentDiv2){
+                if(agentDiv1){
                     for(let i = 0; i < nodes.length; i++){
                         for(let j = 0; j < nodes[i].agents.length; j++){
                             const agent = nodes[i].agents[j];
@@ -169,14 +162,9 @@ function loadAgentLogic(){
                     }
                     if(agent1 && agent2){
                         agentDiv1.style.animation = "internal-pulse ease-in-out 0.5s";
-                        agentDiv2.style.animation = "internal-pulse ease-in-out 0.5s";
                         agentDiv1.onanimationend = ()=>{
                             agentDiv1.style.animation = "none";
                             agentDiv1.onanimationend = null;
-                        }
-                        agentDiv2.onanimationend = ()=>{
-                            agentDiv2.style.animation = "none";
-                            agentDiv2.onanimationend = null;
                         }
 
                         const originElement = document.querySelectorAll(".h-path")[(agent1.nodeIndex - 1)];
@@ -199,34 +187,20 @@ function loadAgentLogic(){
 
                         const mode = getPathMode();
                         if(mode === 0 && (agent1.nodeIndex - 1) % 2 === 1) startPosition = 1 - startPosition;
+                        if(mode === 0 && (agent2.nodeIndex - 1) % 2 === 1) endPosition = 1 - endPosition;
                         let nextPath = [];
                         if(agent1.nodeIndex !== agent2.nodeIndex){
-                            const mode = getPathMode();
                             nextPath.push({element:".spine-path", vertical:true, startPosition:(agent1.nodeIndex - 1), endPosition:(agent2.nodeIndex - 1)});
-                            if(
-                                mode === 0 &&
-                                (Math.abs(agent1.nodeIndex - agent2.nodeIndex) === 1) &&
-                                Math.floor(agent1.nodeIndex / 2) === Math.floor(agent2.nodeIndex / 2)
-                            ) nextPath.pop();
-                        
-                            /*if(
-                                mode === 1 || 
-                                (mode === 0 && 
-                                    (Math.abs(agent1.nodeIndex - agent2.nodeIndex) !== 1) ||
-                                    Math.floor(agent1.nodeIndex / 2) * 2 !== Math.floor(agent2.nodeIndex / 2) * 2
-                                )){
-                                nextPath.push({element:".spine-path", vertical:true, startPosition:(agent1.nodeIndex - 1), endPosition:(agent2.nodeIndex - 1)});
-                            }*/
-                            //nextPath.push({element:"#h-path-"+(agent2.nodeIndex-1), vertical:false, startPosition:0, endPosition:endPosition});
+                            nextPath.push({element:"#h-path-"+agent2.nodeIndex, vertical:false, startPosition:0, endPosition:endPosition});
+                            spawnOrb("internal", agent1.id, agent1.nodeIndex, agent2.nodeIndex, originElement, false, startPosition, null, nextPath, null, null);
                         }
-                        spawnOrb("internal", agent1.nodeIndex, agent2.nodeIndex, originElement, false, startPosition, endPosition, nextPath, null, null);
+                        else spawnOrb("internal", agent1.id, agent1.nodeIndex, agent2.nodeIndex, originElement, false, startPosition, endPosition, nextPath, null, null);
+                        consoleLog("Agent-{"+agent1.id+"} on Node {"+agent1.nodeIndex+"} sent an internal message to Agent-{"+agent2.id+"} on Node {"+agent2.nodeIndex+"}");
                     }
                 }
             }
         }
     }, 1000);
-
-
 
     window.oncontextmenu = (e)=>{
         e.preventDefault();
@@ -234,10 +208,11 @@ function loadAgentLogic(){
     }
 }
 function spawnAgent(agentID, nodes){
+    const externalCallMaxTime = Math.floor(Math.random() * 5) + 5;
     const newAgent = {
         id:agentID,
-        externalCallTime:0,
-        externalCallMaxTime:Math.floor(Math.random() * 5) + 5
+        externalCallMaxTime:externalCallMaxTime,
+        externalCallTime:randomInteger(0, externalCallMaxTime)
     }
 
     const allAgents = [];
@@ -276,8 +251,8 @@ function getPathMode(){
     if(window.innerWidth < 780 || (window.innerWidth > 1000 && window.innerWidth < 1466)) mode = 1;
     return mode;
 }
-function spawnOrb(type, nodeIndexStart, nodeIndexEnd, originElement, vertical, startPosition, endPosition, nextPath, logMessage, externalPathIndex){
-    const mode = getPathMode();
+function spawnOrb(type, agentID, nodeIndexStart, nodeIndexEnd, originElement, vertical, startPosition, endPosition, nextPath, logMessage, externalPathIndex){
+    if(!originElement) return;
     const orb = document.createElement("div");
     let animationDelay = (nodeIndexStart - 1) * 0.5;
     switch(type){
@@ -287,42 +262,71 @@ function spawnOrb(type, nodeIndexStart, nodeIndexEnd, originElement, vertical, s
         case    "retry": orb.className = "orb orb-retry";    break;
         case     "fail": orb.className = "orb orb-fail";     break;
     }
-    if(vertical){
-        animationDelay = 0;
-        orb.style.setProperty("--orb-left", "0%");
-        orb.style.setProperty("--orb-top", "100%");
 
-        if(startPosition > 0){
-            if(mode === 1) orb.style.top = startPosition * 6.5 + "rem";
-            else orb.style.top = Math.floor(startPosition / 2) * 2 * 3.5 + "rem";
+    orb.style.animationDuration = "1s";
+    if(vertical){
+        orbLogicVertical(orb, nodeIndexStart, nodeIndexEnd, startPosition, endPosition);
+        animationDelay = 0;
+    }
+    else animationDelay = orbLogicHorizontal(orb, nodeIndexStart, nodeIndexEnd, startPosition, endPosition, animationDelay);
+    orb.style.animationDelay = animationDelay + "s";
+    orb.dataset.agentStart = agentID;
+
+    originElement.appendChild(orb);
+    orb.onanimationstart = ()=>{orb.dataset.agentStart = ""}
+    orb.onanimationend = ()=>{orbAnimationEnd(orb, type, agentID, nodeIndexStart, nodeIndexEnd, endPosition, nextPath, logMessage, externalPathIndex)}
+}
+function orbLogicVertical(orb, nodeIndexStart, nodeIndexEnd, startPosition, endPosition){
+    const mode = getPathMode();
+    orb.style.setProperty("--orb-left", "0%");
+    orb.style.setProperty("--orb-top", "100%");
+
+    if(startPosition > 0){
+        if(mode === 1) orb.style.top = startPosition * 6.5 + "rem";
+        else orb.style.top = Math.floor(startPosition / 2) * 2 * 3.5 + "rem";
+    }
+    if(endPosition !== null){
+        let endCoords;
+        if(mode === 1){
+            orb.style.top = startPosition * 6.5 + "rem";
+            endCoords = endPosition * 6.5 + "rem";
         }
-        if(endPosition !== null){
-            console.log(startPosition, endPosition)
-            let endCoords;
-            if(mode === 1){
-                orb.style.top = startPosition * 6.5 + "rem";
-                endCoords = endPosition * 3.5 + "rem";
+        else{
+            orb.style.top = Math.floor(startPosition / 2) * 2 * 3 + "rem";
+            endCoords = Math.floor(endPosition / 2) * 2 * 3 + "rem";
+        }
+        orb.style.setProperty("--orb-top", endCoords);
+
+        function getRow(id, mode){
+            if(mode === 1) return id - 1;
+            return Math.floor((id - 1) / 2);
+        }
+        let indexS = getRow(nodeIndexStart, mode);
+        let indexE = getRow(nodeIndexEnd, mode);
+        let rowDist = Math.abs(indexE - indexS);
+        orb.style.animationDuration = 0.25 * rowDist + "s";
+    }
+}
+function orbLogicHorizontal(orb, nodeIndexStart, nodeIndexEnd, startPosition, endPosition, animationDelay){
+    if(nodeIndexEnd !== null){
+        animationDelay = 0;
+        if(nodeIndexStart === nodeIndexEnd){
+            if(startPosition < endPosition){
+                orb.style.setProperty("--orb-left", "50%");
+                orb.style.setProperty("--orb-top", "0%");
             }
             else{
-                orb.style.top = Math.floor(startPosition / 2) * 2 * 3 + "rem";
-                endCoords = Math.floor(endPosition / 2) * 2 * 3 + "rem";
+                orb.style.setProperty("--orb-left", "0%");
+                orb.style.setProperty("--orb-top", "0%");
+                orb.style.left = "50%";
             }
-            orb.style.setProperty("--orb-top", endCoords);
         }
-    }
-    else{
-        if(nodeIndexEnd !== null){
-            animationDelay = 0;
-            if(nodeIndexStart === nodeIndexEnd){
-                if(startPosition < endPosition){
-                    orb.style.setProperty("--orb-left", "50%");
-                    orb.style.setProperty("--orb-top", "0%");
-                }
-                else{
-                    orb.style.setProperty("--orb-left", "0%");
-                    orb.style.setProperty("--orb-top", "0%");
-                    orb.style.left = "50%";
-                }
+        else{
+            if(endPosition !== null){
+                let endCoords = endPosition * 12 + "rem";
+                orb.style.setProperty("--orb-left", endCoords);
+                orb.style.setProperty("--orb-top", "0%");
+                orb.style.left = "100%";
             }
             else{
                 orb.style.setProperty("--orb-left", "100%");
@@ -330,39 +334,53 @@ function spawnOrb(type, nodeIndexStart, nodeIndexEnd, originElement, vertical, s
                 if(startPosition > 0) orb.style.left = startPosition * 12 + "rem";
             }
         }
-        else{
-            animationDelay += startPosition * 0.25;
-            orb.style.setProperty("--orb-left", "100%");
-            orb.style.setProperty("--orb-top", "0%");
-            if(startPosition > 0) orb.style.left = startPosition * 12 + "rem";
-        }
     }
-    orb.style.animationDelay = animationDelay + "s";
-
-    originElement.appendChild(orb);
-    orb.onanimationend = ()=>{
-        orb.remove();
-        if(nextPath.length === 0){
-            if(logMessage !== null) consoleLog(logMessage);
-            if(externalPathIndex !== null){
-                const externalDIV = document.querySelectorAll(".external")[externalPathIndex];
+    else{
+        animationDelay += startPosition * 0.25;
+        orb.style.setProperty("--orb-left", "100%");
+        orb.style.setProperty("--orb-top", "0%");
+        if(startPosition > 0) orb.style.left = startPosition * 12 + "rem";
+    }
+    return animationDelay;
+}
+function orbAnimationEnd(orb, type, agentID, nodeIndexStart, nodeIndexEnd, endPosition, nextPath, logMessage, externalPathIndex){
+    orb.remove();
+    if(nextPath.length === 0){
+        if(logMessage !== null) consoleLog(logMessage);
+        if(externalPathIndex !== null){
+            const externalDIV = document.querySelectorAll(".external")[externalPathIndex];
+            externalDIV.style.animation = "none";
+            externalDIV.style.animation = "external-pulse ease-in-out 0.5s";
+            externalDIV.onanimationend = ()=>{
                 externalDIV.style.animation = "none";
-                externalDIV.style.animation = "external-pulse ease-in-out 0.5s";
-                externalDIV.onanimationend = ()=>{
-                    externalDIV.style.animation = "none";
-                    externalDIV.onanimationend = null;
-                }
+                externalDIV.onanimationend = null;
             }
         }
         else{
-            const nextPathObject = nextPath.shift();
-            const nextPathElement = document.querySelector(nextPathObject.element);
-            spawnOrb(
-                type, nodeIndexStart, nodeIndexEnd, nextPathElement, nextPathObject.vertical,
-                nextPathObject.startPosition, nextPathObject.endPosition,
-                nextPath, logMessage, externalPathIndex
-            );
+            const mode = getPathMode();
+            let childIndex = endPosition;
+            if(mode === 0 && (nodeIndexEnd - 1) % 2 === 1) childIndex = 1 - endPosition;
+            try{
+                const endNode = document.getElementById("node-"+nodeIndexEnd);
+                const endNodeBody = endNode.children[1];
+                const endAgent = endNodeBody.children[childIndex];
+                endAgent.style.animation = "internal-pulse ease-in-out 0.5s";
+                endAgent.onanimationend = ()=>{
+                    endAgent.style.animation = "none";
+                    endAgent.onanimationend = null;
+                }
+            }
+            catch{}
         }
+    }
+    else{
+        const nextPathObject = nextPath.shift();
+        const nextPathElement = document.querySelector(nextPathObject.element);
+        spawnOrb(
+            type, agentID, nodeIndexStart, nodeIndexEnd, nextPathElement, nextPathObject.vertical,
+            nextPathObject.startPosition, nextPathObject.endPosition,
+            nextPath, logMessage, externalPathIndex
+        );
     }
 }
 
@@ -421,7 +439,12 @@ function loadChaosButtonLogic(){
 
             if(!allChaosButtonsActive(activeList)) return;
             const CTAbar = document.querySelector(".CTA-bar");
-            CTAbar.style.animation = "CTA-bar-slide ease-in-out 0.25s forwards";
+            CTAbar.style.animation = "CTA-bar-slide ease-in-out 0.25s";
+            CTAbar.onanimationend = ()=>{
+                CTAbar.classList.add("CTA-bar-extended");
+                CTAbar.style.animation = "none";
+                CTAbar.onanimationend = null;
+            }
         }
     }
 
@@ -450,36 +473,3 @@ function allChaosButtonsActive(activeList){
     }
     return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//➔
-/*
-setTimeout(()=>{
-pathH = document.querySelector(".h-path") 
-pathV = document.querySelector(".spine-path") 
-externalH = document.querySelector(".external-paths").querySelector(".v-path")
-}, 100)
-let pathH = document.querySelector(".h-path") 
-let pathV = document.querySelector(".spine-path") 
-let externalH
-
-*/

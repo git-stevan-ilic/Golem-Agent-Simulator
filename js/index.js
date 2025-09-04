@@ -81,7 +81,8 @@ function loadAgentLogic(){
         const nodeIndex = e.detail.nodeIndex;
 
         nodes[nodeIndex].agents.splice(agentIndex, 1);
-        agentCount--;  
+        agentCount--; 
+        console.log(nodes, agentCount) 
     });
     window.addEventListener("contextmenu", (e)=>{
         e.preventDefault();
@@ -104,11 +105,11 @@ function spawnAgent(agentID, agentCount, nodes){
     const chosen = shortestArrays[Math.floor(Math.random() * shortestArrays.length)];
     newAgent.nodeIndex = chosen.index;
     chosen.array.push(newAgent);
-    agentCount++;
-    agentID++;
 
     consoleLog("Agent-{"+agentID+"} created on Node {"+chosen.index+"} via built-in API");
     generateAgentDIV(chosen.index, agentID);
+
+    agentCount++; agentID++;
     return [agentID, agentCount, nodes];
 }
 function generateAgentDIV(nodeIndex, agentID){

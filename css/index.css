@@ -219,6 +219,7 @@ pre{
     position:absolute;
     left:50%;
     top:50%;
+    max-width:calc(100% - 2rem);
 }
 .window-body{
     width:calc(100% - 2rem);
@@ -249,4 +250,37 @@ pre{
 
     width:40rem;
     max-width:calc(100vw - 5rem);
+}
+
+.version-slide-container{
+    transform:translate(-50%);
+    margin-bottom:1rem;
+    padding-right:1rem;
+    padding-left:1rem;
+    margin-left:50%;
+    margin-top:2rem;
+    
+    width:20rem;
+    max-width:100%;
+}
+.version-title{
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    display:flex;
+
+    transform:translateY(-100%);
+    font-size:1.2rem;
+    width:100%;
+}
+input[type=range]{
+    width:100%;
+}
+.version-value{
+    justify-content:center;
+    align-items:center;
+    display:flex;
+
+    margin-top:1rem;
+    width:100%;
 }

@@ -271,6 +271,7 @@ function loadAgentLogic(){
         const agentDiv = document.getElementById(agentDivID);
         if(!agentDiv) return;
         nodes[nodeIndex].agents[agentIndex].active = false;
+        nodes[nodeIndex].agents[agentIndex].error = nodes[nodeIndex].agents[agentIndex].state;
         consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} crashed in sandbox", "red");
         consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} fault contained", "green");
 
@@ -278,13 +279,54 @@ function loadAgentLogic(){
         agentDivIcon.classList.add("agent-error");
         agentDiv.style.animation = "agent-shake ease-in-out 0.25s, agent-crash ease-in-out 0.25s forwards";
     });
-
-
-
-
     window.addEventListener("troubleshoot", ()=>{
+        const nodeIndex = randomInteger(0, nodes.length-1);
+        const agentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
+        const agentDivID = "agent-"+nodes[nodeIndex].agents[agentIndex].id;
         
+        const agentDiv = document.getElementById(agentDivID);
+        if(!agentDiv) return;
+
+        const pauseLoopEvent = new Event("pause-loop");
+        window.dispatchEvent(pauseLoopEvent);
+
+        const versionSlide = document.querySelector("#version-slide");
+        const versionValue = document.querySelector(".version-value");
+        versionValue.innerText = "Version: " + nodes[nodeIndex].agents[agentIndex].state;
+        versionSlide.max = nodes[nodeIndex].agents[agentIndex].state;
+        versionSlide.min = 0;
+        versionSlide.value = versionSlide.max;
+        versionSlide.oninput = ()=>{
+            versionValue.innerText = "Version: " + versionSlide.value;
+        }
+
+        fadeIn("#version-mask", "block", 0.1, null);
+
+        function closeModal(){
+            fadeOut("#version-mask", 0.1, ()=>{
+                setTimeout(()=>{
+                    const resumeLoopEvent = new Event("resume-loop");
+                    window.dispatchEvent(resumeLoopEvent);
+
+                    nodes[nodeIndex].agents[agentIndex].state = parseInt(versionSlide.value);
+                    if(nodes[nodeIndex].agents[agentIndex].state < nodes[nodeIndex].agents[agentIndex].error){
+                        nodes[nodeIndex].agents[agentIndex].error = -1;
+                        const agentDivIcon = agentDiv.children[0];
+                        agentDivIcon.classList.remove("agent-error");
+                        agentDiv.style.animation = "none";
+                    }
+                    consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} rewound to earlier state for safe replay", "green");
+                }, 250);
+            });
+        }
+        document.getElementById("version-window").onclick = (e)=>{e.stopPropagation()}
+        document.getElementById("version-mask").onclick = closeModal;
+        document.getElementById("version-ok").onclick = closeModal;
     });
+
+
+
+
     window.addEventListener("update-agent", ()=>{
         
     });
@@ -335,6 +377,8 @@ function spawnAgent(nodeID, agentID, agentCount, nodes, agentToSpawn){
     else{
         newAgent = {
             id:agentID,
+            state:0,
+            error:-1,
             active:true,
             externalCallMaxTime:externalCallMaxTime,
             externalCallTime:randomInteger(0, externalCallMaxTime)
@@ -458,6 +502,7 @@ function externalCallLogic(nodes){
             const externalPathIndex = Math.floor(Math.random() * externalPaths.length);
             const external = externalPaths[externalPathIndex];
 
+            agent.state++;
             const logMessage = "Agent-{"+agent.id+"} on Node {"+agent.nodeIndex+"} called "+externalConsoleMessages[externalPathIndex];
             let nextPath = [
                 {element:".spine-path", vertical:true, startPosition:(agent.nodeIndex - 1), endPosition:null},
@@ -519,6 +564,7 @@ function internalCallLogic(internalCallCountDown, agentCount, nodes){
         }
     }
 
+    agent1.state++;
     const mode = getPathMode();
     if(mode === 0 && (agent1.nodeIndex - 1) % 2 === 1) startPosition = 1 - startPosition;
     if(mode === 0 && (agent2.nodeIndex - 1) % 2 === 1) endPosition = 1 - endPosition;
@@ -684,16 +730,17 @@ function loadChaosButtonLogic(){
         const buttonIcon = chaosButtons[i].children[0];
         const button = chaosButtons[i];
 
-        buttonSide.onclick = ()=>{chaoButtonClick(true)};
-        button.onclick = ()=>{chaoButtonClick(false)};
+        buttonSide.addEventListener("click", ()=>{chaoButtonClick(true)});
+        button.addEventListener("click", ()=>{chaoButtonClick(false)});
         activeList.push(false);
 
-        function chaoButtonClick(){
+        function chaoButtonClick(side){
             buttonIconSide.classList.add("chaos-button-icon-active");
             buttonSide.classList.add("chaos-button-active");
             buttonIcon.classList.add("chaos-button-icon-active");
             button.classList.add("chaos-button-active");
             activeList[i] = true;
+            if(side) chaosSideBar();
 
             if(!allChaosButtonsActive(activeList)) return;
             const CTAbar = document.querySelector(".CTA-bar");

@@ -87,7 +87,7 @@ function consoleLog(text, color){
 
 /*--Agent Logic--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadAgentLogic(){
-    let agentID = 1, nodeID = 1, agentCount = 0, nodes = [];
+    let agentID = 1, nodeID = 1, agentCount = 0, nodes = [], suspended = [];
     for(let i = 0; i < 3; i++) [nodeID, nodes] = spawnNode(nodeID, nodes);
     for(let i = 0; i < 5; i++) [nodeID, agentID, agentCount, nodes] = spawnAgent(nodeID, agentID, agentCount, nodes);
 
@@ -228,11 +228,38 @@ function loadAgentLogic(){
             }, 1000);
         }
     });
-
-
     window.addEventListener("suspend-agent", ()=>{
+        const nodeIndex = randomInteger(0, nodes.length-1);
+        const agentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
+        const agentDivID = "agent-"+nodes[nodeIndex].agents[agentIndex].id;
         
+        const agentDiv = document.getElementById(agentDivID);
+        if(!agentDiv) return;
+        nodes[nodeIndex].agents[agentIndex].active = false;
+        consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} suspended (awaiting approval) with state preserved");
+
+        fadeOut("#"+agentDivID, 0.1, ()=>{
+            agentDiv.style.opacity = 0;
+            agentDiv.style.display = "flex";
+            agentDiv.style.animation = "agent-shrink ease-in-out 0.1s";
+
+            agentDiv.onanimationend = ()=>{
+                suspended.push(nodes[nodeIndex].agents[agentIndex]);
+                nodes[nodeIndex].agents.splice(agentIndex, 1);
+
+                const suspendedAgentContainer = document.querySelector(".suspended-agent-container");
+                suspendedAgentContainer.appendChild(agentDiv);
+                const agentDivIcon = agentDiv.children[0];
+                agentDivIcon.classList.add("agent-sleep");
+                fadeIn("#"+agentDivID, "flex", 0.1, ()=>{
+                    agentDiv.style.opacity = 1;
+                });
+            }
+        });
     });
+
+
+
     window.addEventListener("inject-defect", ()=>{
         
     });
@@ -247,7 +274,7 @@ function loadAgentLogic(){
 
     window.addEventListener("contextmenu", (e)=>{
         e.preventDefault();
-        console.log(nodes, agentCount, agentID, internalCallCountDown);
+        console.log(nodes, suspended, agentCount, agentID, internalCallCountDown);
     });
 }
 function spawnNode(nodeID, nodes){

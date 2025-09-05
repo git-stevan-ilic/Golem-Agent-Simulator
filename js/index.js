@@ -87,9 +87,9 @@ function consoleLog(text, color){
 
 /*--Agent Logic--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadAgentLogic(){
-    let agentID = 1, nodeID = 1, agentCount = 0, nodes = [], suspended = [];
+    let agentID = 1, nodeID = 1, agentCount = 0, version = 1,nodes = [], suspended = [];
     for(let i = 0; i < 3; i++) [nodeID, nodes] = spawnNode(nodeID, nodes);
-    for(let i = 0; i < 5; i++) [nodeID, agentID, agentCount, nodes] = spawnAgent(nodeID, agentID, agentCount, nodes);
+    for(let i = 0; i < 5; i++) [nodeID, agentID, agentCount, nodes] = spawnAgent(version, nodeID, agentID, agentCount, nodes);
 
     let loopPopupStoped = false;
     let internalCallCountDown = Math.floor(Math.random() * 7) + 7;
@@ -134,7 +134,7 @@ function loadAgentLogic(){
         if(!loopPopupStoped) agentInterval = setInterval(agentLoop, 1000);
     });
     window.addEventListener("add-agent", ()=>{
-        [nodeID, agentID, agentCount, nodes] = spawnAgent(nodeID, agentID, agentCount, nodes);
+        [nodeID, agentID, agentCount, nodes] = spawnAgent(version, nodeID, agentID, agentCount, nodes);
     });
     window.addEventListener("remove-agent", (e)=>{
         const agentIndex = e.detail.agentIndex;
@@ -169,7 +169,7 @@ function loadAgentLogic(){
                     const recoveredAgentNodes = [];
                     for(let i = 0; i < agentsToRecover.length; i++){
                         let newNodeIndex;
-                        [nodeID, agentID, agentCount, nodes, newNodeIndex] = spawnAgent(nodeID, agentID, agentCount, nodes, agentsToRecover[i]);
+                        [nodeID, agentID, agentCount, nodes, newNodeIndex] = spawnAgent(version, nodeID, agentID, agentCount, nodes, agentsToRecover[i]);
                         recoveredAgentNodes.push(newNodeIndex);
                     }
 
@@ -323,19 +323,32 @@ function loadAgentLogic(){
         document.getElementById("version-mask").onclick = closeModal;
         document.getElementById("version-ok").onclick = closeModal;
     });
-
-
-
-
     window.addEventListener("update-agent", ()=>{
-        
-    });
+        const pauseLoopEvent = new Event("pause-loop");
+        window.dispatchEvent(pauseLoopEvent);
 
+        const updateTiles = document.querySelectorAll(".update-tile");
+        for(let i = 0; i < updateTiles.length; i++){
+            updateTiles[i].onclick = ()=>{
+                version++;
+                const agentText = document.querySelectorAll(".agent-text");
+                for(let j = 0; j < agentText.length; j++){
+                    const vPos = agentText[j].innerText.indexOf("v");
+                    if(vPos === -1) agentText[j].innerText += " v2";
+                    else{
+                        const text = agentText[j].innerText.slice(0, vPos);
+                        agentText[j].innerText = text + " v"+version;
+                    }
+                }
+                
+                const resumeLoopEvent = new Event("resume-loop");
+                window.dispatchEvent(resumeLoopEvent);
+                fadeOut("#update-mask", 0.1, null);
+                consoleLog("Version {v"+version+"} deployed; {"+agentText.length+"} agents migrated with zero downtime", "green");
+            }
+        }
 
-
-    window.addEventListener("contextmenu", (e)=>{
-        e.preventDefault();
-        console.log(nodes, suspended, agentCount, agentID, internalCallCountDown);
+        fadeIn("#update-mask", "block", 0.1, null);
     });
 }
 function spawnNode(nodeID, nodes){
@@ -367,7 +380,7 @@ function spawnNode(nodeID, nodes){
 
     return [nodeID, nodes];
 }
-function spawnAgent(nodeID, agentID, agentCount, nodes, agentToSpawn){
+function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn){
     const externalCallMaxTime = Math.floor(Math.random() * 5) + 5;
     let newAgent;
     if(agentToSpawn){
@@ -401,25 +414,26 @@ function spawnAgent(nodeID, agentID, agentCount, nodes, agentToSpawn){
     }
     
     if(!agentToSpawn) consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
-    generateAgentDIV(newAgent.nodeIndex, agentID, agentToSpawn);
+    generateAgentDIV(version, newAgent.nodeIndex, agentID, agentToSpawn);
 
     agentCount++; agentID++;
     return [nodeID, agentID, agentCount, nodes, newAgent.nodeIndex];
 }
-function generateAgentDIV(nodeIndex, agentID, agentToSpawn){
+function generateAgentDIV(version, nodeIndex, agentID, agentToSpawn){
     const nodeDiv = document.getElementById("node-"+nodeIndex);
     const nodeDivBody = nodeDiv.querySelector(".node-body");
     const agentDiv     = document.createElement("div");
     const agentDivIcon = document.createElement("div");
     const agentDivText = document.createElement("div");
 
-    let agentDivID = agentID;
+    let agentDivID = agentID, versionText = " v"+version;
     if(agentToSpawn) agentDivID = agentToSpawn.id;
+    if(version === 1) versionText = "";
 
     agentDiv.className = "agent";
     agentDivIcon.className = "agent-icon";
     agentDivText.className = "agent-text";
-    agentDivText.innerText = "Agent " + agentDivID;
+    agentDivText.innerText = "Agent " + agentDivID + versionText;
     agentDiv.id = "agent-"+agentDivID;
 
     agentDiv.appendChild(agentDivIcon);

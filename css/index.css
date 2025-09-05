@@ -284,3 +284,41 @@ input[type=range]{
     margin-top:1rem;
     width:100%;
 }
+
+.update-text{
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    display:flex;
+
+    font-size:1.2rem;
+    width:100%;
+}
+.update-tile-container{
+    margin-bottom:-2rem;
+    margin-top:2rem;
+    width:20rem;
+    max-width:100%;
+
+    justify-content:space-evenly;
+    align-items:center;
+    display:flex;
+}
+.update-tile{
+    background-color:var(--base-color-2);
+    border-radius:0.5rem;
+    height:4rem;
+    width:8rem;
+
+    transition:ease-in-out 0.1s;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    display:flex;
+}
+.update-tile:hover{
+    background-color:var(--base-color-3);
+}
+.update-tile:active{
+    opacity:0.8;
+}

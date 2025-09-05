@@ -283,6 +283,31 @@
     background-color:var(--accent-red);
 }
 
+.orb-color-change{
+    box-shadow:0px 0px 1rem var(--accent-green);
+    background-color:var(--accent-green);
+    border-radius:100%;
+    position:absolute;
+    aspect-ratio:1;
+    height:1rem;
+    left:0px;
+    top:0px;
+
+    animation:orb-to-red ease-in-out 0.2s forwards;
+}
+
 @keyframes orb-path{
     to {left:var(--orb-left); top:var(--orb-top)}
+}
+@keyframes orb-to-red{
+    from {box-shadow:0px 0px 1rem var(--accent-green); background-color:var(--accent-green);}
+    to   {box-shadow:0px 0px 1rem var(--accent-red);   background-color:var(--accent-red);}
+}
+@keyframes orb-to-yellow{
+    from {box-shadow:0px 0px 1rem var(--accent-red); background-color:var(--accent-red);}
+    to   {box-shadow:0px 0px 1rem var(--accent-yellow);   background-color:var(--accent-yellow);}
+}
+@keyframes orb-to-green{
+    from {box-shadow:0px 0px 1rem var(--accent-yellow); background-color:var(--accent-yellow);}
+    to   {box-shadow:0px 0px 1rem var(--accent-green);   background-color:var(--accent-green);}
 }

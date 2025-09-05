@@ -186,11 +186,50 @@ function loadAgentLogic(){
             });
         }, 1000);
     });
-
-
     window.addEventListener("fail-interaction", ()=>{
+        const spinePath = document.querySelector(".spine-path");
+        const spineOrbs = spinePath.querySelectorAll(".orb");
+        const allOrbs = document.querySelectorAll(".orb");
+        if(allOrbs.length === 0) return;
+
+        let selectedOrb;
+        if(spineOrbs.length > 0) selectedOrb = spineOrbs[randomInteger(0, spineOrbs.length-1)];
+        else selectedOrb = allOrbs[randomInteger(0, allOrbs.length-1)];
+        if(!selectedOrb) return;
         
+        selectedOrb.style.animationPlayState = "paused";
+        consoleLog("Agent-{"+selectedOrb.dataset.origin+"} external call failed", "red");
+
+        const orbColorChange = document.createElement("div");
+        orbColorChange.className = "orb-color-change";
+        selectedOrb.appendChild(orbColorChange);
+        selectedOrb.classList.remove("orb-success");
+        orbColorChange.onanimationend = (e)=>{
+            e.stopPropagation();
+            setTimeout(()=>{
+                orbColorChange.style.animation = "orb-to-yellow ease-in-out 0.2s forwards";
+                orbColorChange.onanimationend = (e)=>{
+                    e.stopPropagation();
+
+                    void orbColorChange.offsetWidth;
+                    setTimeout(()=>{
+                        orbColorChange.style.animation = "orb-to-green ease-in-out 0.2s forwards";
+                        orbColorChange.onanimationend = (e)=>{
+                            consoleLog("Agent-{"+selectedOrb.dataset.origin+"} external call retried successfully with exactly-once guarantee", "green");
+                            e.stopPropagation();
+
+                            void orbColorChange.offsetWidth;
+                            orbColorChange.remove();
+                            selectedOrb.classList.add("orb-success");
+                            selectedOrb.style.animationPlayState = "running";
+                        }
+                    }, 500); 
+                }
+            }, 1000);
+        }
     });
+
+
     window.addEventListener("suspend-agent", ()=>{
         
     });
@@ -473,7 +512,8 @@ function spawnOrb(type, agentID, nodeIndexStart, nodeIndexEnd, originElement, ve
     }
     else animationDelay = orbLogicHorizontal(orb, nodeIndexStart, nodeIndexEnd, startPosition, endPosition, animationDelay);
     orb.style.animationDelay = animationDelay + "s";
-    orb.dataset.agentStart = agentID;
+    orb.dataset.agentStart = JSON.stringify(agentID);
+    orb.dataset.origin = JSON.stringify(agentID);
 
     originElement.appendChild(orb);
     orb.onanimationstart = ()=>{orb.dataset.agentStart = ""}

@@ -32,6 +32,9 @@
 .agent-sleep{
     background-image:url("../assets/icons/sleep.png");
 }
+.agent-error{
+    background-image:url("../assets/icons/error.png");
+}
 .agent-text{
     justify-content:center;
     align-items:center;
@@ -49,6 +52,18 @@
 }
 @keyframes agent-shrink{
     to {width:0rem;}
+}
+@keyframes agent-shake{
+    0%   {transform:translateX(-0.25rem);}
+    20%  {transform:translateX( 0.25rem);}
+    40%  {transform:translateX(-0.25rem);}
+    60%  {transform:translateX( 0.25rem);}
+    80%  {transform:translateX(-0.25rem);}
+    100% {transform:translateX( 0rem); }
+}
+@keyframes agent-crash{
+    from {border:1px solid var(--base-color-3);}
+    to   {border:1px solid var(--accent-red); color:var(--accent-red)}
 }
 
 /*--Suspended Agents---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/

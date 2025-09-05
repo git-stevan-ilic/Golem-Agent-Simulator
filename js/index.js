@@ -257,12 +257,31 @@ function loadAgentLogic(){
             }
         });
     });
-
-
-
     window.addEventListener("inject-defect", ()=>{
-        
+        let loopNum = 0;
+        let nodeIndex = randomInteger(0, nodes.length-1);
+        let agentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
+        while(true){
+            loopNum++;
+            if(loopNum >= 100) break;
+            if(nodes[nodeIndex].agents[agentIndex].active) break;
+        }
+
+        const agentDivID = "agent-"+nodes[nodeIndex].agents[agentIndex].id;
+        const agentDiv = document.getElementById(agentDivID);
+        if(!agentDiv) return;
+        nodes[nodeIndex].agents[agentIndex].active = false;
+        consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} crashed in sandbox", "red");
+        consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} fault contained", "green");
+
+        const agentDivIcon = agentDiv.children[0];
+        agentDivIcon.classList.add("agent-error");
+        agentDiv.style.animation = "agent-shake ease-in-out 0.25s, agent-crash ease-in-out 0.25s forwards";
     });
+
+
+
+
     window.addEventListener("troubleshoot", ()=>{
         
     });

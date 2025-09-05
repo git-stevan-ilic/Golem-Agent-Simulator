@@ -143,12 +143,51 @@ function loadAgentLogic(){
         nodes[nodeIndex].agents.splice(agentIndex, 1);
         agentCount--; 
     });
-
-
-
     window.addEventListener("kill-node", ()=>{
+        const nodeIndex = randomInteger(0, nodes.length-1);
+        const agentsToRecover = [];
+        for(let i = 0; i < nodes[nodeIndex].agents.length; i++){
+            agentsToRecover.push(nodes[nodeIndex].agents[i]);
+            nodes[nodeIndex].agents[i].active = false;
+        }
+
+        let sPluralAgent = "s";
+        if(nodes[nodeIndex].agents.length === 1) sPluralAgent = "";
+        let logMessageTerminated = "Node-{"+nodes[nodeIndex].id+"} terminated";
+        let logMessageRecovered = "{"+nodes[nodeIndex].agents.length+"} agent"+sPluralAgent+" recovered on Node";
+        consoleLog(logMessageTerminated, "red");
         
+        const nodeDiv = document.getElementById("node-"+nodes[nodeIndex].id);
+        nodeDiv.style.animation = "kill-node ease-in-out 0.5s forwards";
+        setTimeout(()=>{
+            fadeOut("#node-"+nodes[nodeIndex].id, 0.1, ()=>{
+                document.getElementById("h-path-"+nodes[nodeIndex].id).remove();
+                nodes.splice(nodeIndex, 1);
+                nodeDiv.remove();
+
+                setTimeout(()=>{
+                    const recoveredAgentNodes = [];
+                    for(let i = 0; i < agentsToRecover.length; i++){
+                        let newNodeIndex;
+                        [nodeID, agentID, agentCount, nodes, newNodeIndex] = spawnAgent(nodeID, agentID, agentCount, nodes, agentsToRecover[i]);
+                        recoveredAgentNodes.push(newNodeIndex);
+                    }
+
+                    let sPluralNode = "s";
+                    if(recoveredAgentNodes.length === 1) sPluralNode = "";
+                    logMessageRecovered += sPluralNode + " ";
+                    for(let i = 0; i < recoveredAgentNodes.length; i++){
+                        logMessageRecovered += "{"+recoveredAgentNodes[i]+"}";
+                        if(i !== recoveredAgentNodes.length-1) logMessageRecovered += ", ";
+                    }
+                    logMessageRecovered += " with no lost state";
+                    consoleLog(logMessageRecovered, "green");
+                }, 100);
+            });
+        }, 1000);
     });
+
+
     window.addEventListener("fail-interaction", ()=>{
         
     });
@@ -169,7 +208,7 @@ function loadAgentLogic(){
 
     window.addEventListener("contextmenu", (e)=>{
         e.preventDefault();
-        console.log(nodes, agentCount, agentID);
+        console.log(nodes, agentCount, agentID, internalCallCountDown);
     });
 }
 function spawnNode(nodeID, nodes){
@@ -183,6 +222,7 @@ function spawnNode(nodeID, nodes){
     node.className = "node";
 
     nodeHead.innerText = "Node " + nodeID;
+    node.dataset.index = nodeID;
     node.id = "node-" + nodeID;
 
     node.appendChild(nodeHead);
@@ -195,28 +235,35 @@ function spawnNode(nodeID, nodes){
     hPath.className = "h-path";
     nodePaths.appendChild(hPath);
 
-    nodes.push({id:"node-"+nodeID, agents:[]});
+    nodes.push({id:nodeID, agents:[]});
     nodeID++;
 
     return [nodeID, nodes];
 }
-function spawnAgent(nodeID, agentID, agentCount, nodes){
+function spawnAgent(nodeID, agentID, agentCount, nodes, agentToSpawn){
     const externalCallMaxTime = Math.floor(Math.random() * 5) + 5;
-    const newAgent = {
-        id:agentID,
-        externalCallMaxTime:externalCallMaxTime,
-        externalCallTime:randomInteger(0, externalCallMaxTime)
+    let newAgent;
+    if(agentToSpawn){
+        newAgent = agentToSpawn;
+        newAgent.active = true;
+    }
+    else{
+        newAgent = {
+            id:agentID,
+            active:true,
+            externalCallMaxTime:externalCallMaxTime,
+            externalCallTime:randomInteger(0, externalCallMaxTime)
+        }
     }
 
     if(checkNewNodeRequired(nodes)){
         const allAgents = [];
-        for(let i = 0; i < nodes.length; i++) allAgents.push(nodes[i].agents);
-        const minLength = Math.min(...allAgents.map(a => a.length));
-
-        const shortestArrays = allAgents.map((a, i)=>({array:a, index:i+1})).filter(a => a.array.length === minLength);
+        for(let i = 0; i < nodes.length; i++) allAgents.push({agents:nodes[i].agents, id:nodes[i].id});
+        const minLength = Math.min(...allAgents.map(a => a.agents.length));
+        const shortestArrays = allAgents.map((a, i)=>({array:a.agents, index:a.id})).filter(a => a.array.length === minLength);
         const chosen = shortestArrays[Math.floor(Math.random() * shortestArrays.length)];
         newAgent.nodeIndex = chosen.index;
-        chosen.array.push(newAgent); 
+        chosen.array.push(newAgent);
     }
     else{
         [nodeID, nodes] = spawnNode(nodeID, nodes);
@@ -224,24 +271,27 @@ function spawnAgent(nodeID, agentID, agentCount, nodes){
         newAgent.nodeIndex = nodeID - 1;
     }
     
-    consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
-    generateAgentDIV(newAgent.nodeIndex, agentID);
+    if(!agentToSpawn) consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
+    generateAgentDIV(newAgent.nodeIndex, agentID, agentToSpawn);
 
     agentCount++; agentID++;
-    return [nodeID, agentID, agentCount, nodes];
+    return [nodeID, agentID, agentCount, nodes, newAgent.nodeIndex];
 }
-function generateAgentDIV(nodeIndex, agentID){
+function generateAgentDIV(nodeIndex, agentID, agentToSpawn){
     const nodeDiv = document.getElementById("node-"+nodeIndex);
     const nodeDivBody = nodeDiv.querySelector(".node-body");
     const agentDiv     = document.createElement("div");
     const agentDivIcon = document.createElement("div");
     const agentDivText = document.createElement("div");
 
+    let agentDivID = agentID;
+    if(agentToSpawn) agentDivID = agentToSpawn.id;
+
     agentDiv.className = "agent";
     agentDivIcon.className = "agent-icon";
     agentDivText.className = "agent-text";
-    agentDivText.innerText = "Agent " + agentID;
-    agentDiv.id = "agent-"+agentID;
+    agentDivText.innerText = "Agent " + agentDivID;
+    agentDiv.id = "agent-"+agentDivID;
 
     agentDiv.appendChild(agentDivIcon);
     agentDiv.appendChild(agentDivText);
@@ -273,7 +323,7 @@ function retireAgentLogic(retireCountDown, nodes){
     const retiredAgentDIV = document.getElementById("agent-"+retiredAgent.id);        
     for(let k = retiredOrbsNotStarted.length-1; k >= 0; k--) retiredOrbsNotStarted[k].remove();
                 
-    consoleLog("Agent-{"+retiredAgent.id+"} retired on Node {"+(nodeIndex + 1)+"} via built-in API");
+    consoleLog("Agent-{"+retiredAgent.id+"} retired on Node {"+nodes[nodeIndex].id+"} via built-in API");
     fadeOut("#agent-"+retiredAgent.id, 0.1, ()=>{
         retiredAgentDIV.style.opacity = 0;
         retiredAgentDIV.style.display = "flex";
@@ -298,6 +348,7 @@ function externalCallLogic(nodes){
     for(let i = 0; i < nodes.length; i++){
         for(let j = 0; j < nodes[i].agents.length; j++){
             const agent = nodes[i].agents[j];
+            if(!agent.active) continue;
             agent.externalCallTime++;
 
             if(agent.externalCallTime < agent.externalCallMaxTime) continue;
@@ -358,6 +409,7 @@ function internalCallLogic(internalCallCountDown, agentCount, nodes){
     }
         
     if(!agent1 || !agent2) return internalCallCountDown;
+    if(!agent1.active || !agent2.active) return internalCallCountDown;
     agentDiv1.style.animation = "internal-pulse ease-in-out 0.5s";
     agentDiv1.onanimationend = ()=>{
         agentDiv1.style.animation = "none";
@@ -454,6 +506,7 @@ function orbLogicVertical(orb, nodeIndexStart, nodeIndexEnd, startPosition, endP
         }
         let indexS = getRow(nodeIndexStart, mode);
         let indexE = getRow(nodeIndexEnd, mode);
+
         let rowDist = Math.abs(indexE - indexS);
         orb.style.animationDuration = 0.25 * rowDist + "s";
     }
@@ -621,11 +674,13 @@ function chaosTriggerButton(index){
 
     function closeModal(){
         fadeOut("#pop-up-mask", 0.1, ()=>{
-            const resumeLoopEvent = new Event("resume-loop");
-            window.dispatchEvent(resumeLoopEvent);
+            setTimeout(()=>{
+                const resumeLoopEvent = new Event("resume-loop");
+                window.dispatchEvent(resumeLoopEvent);
 
-            const chaosEvent = new Event(chaosEvents[index]);
-            window.dispatchEvent(chaosEvent);
+                const chaosEvent = new Event(chaosEvents[index]);
+                window.dispatchEvent(chaosEvent);
+            }, 250);
         });
     }
 

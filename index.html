@@ -31,7 +31,6 @@
                 <div class="code-display-head">
                     <div class="code-display-tab-container">
                         <div class="code-display-tab code-display-selected-tab">TypeScript</div>
-                        <div class="code-display-tab">Rust</div>
                     </div>
                 </div>
                 <div class="code-display-body">
@@ -56,34 +55,6 @@ const manager = new TaskManager();
 manager.addTask("Collect data");
 manager.addTask("Analyze results");
 manager.processTasks();
-                    </code></pre>
-                    <pre class="line-numbers code-display"><code class="language-rust">
-use tokio::time::{sleep, Duration};
-struct TaskManager{
-    tasks: Vec<String>,
-}
-
-impl TaskManager{
-    fn new() -> Self{
-        Self {tasks: vec![]}
-    }
- 
-    async fn process_tasks(&mut self){
-        for task in &self.tasks{
-            println!("Processing: {}", task);
-            sleep(Duration::from_millis(500)).await;
-        }
-        self.tasks.clear();
-    }
-}
-
-#[tokio::main]
-async fn main(){
-    let mut manager = TaskManager::new();
-    manager.tasks.push("Collect data".to_string());
-    manager.tasks.push("Analyze results".to_string());
-    manager.process_tasks().await;
-}
                     </code></pre>
                 </div>
             </div>

@@ -1,8 +1,9 @@
 /*--Initial------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+window.onresize = resizeConsole;
 window.onload = initLoad;
 
 function initLoad(){
-    let selectedTab = 0;
+    /*let selectedTab = 0;
     const codeDisplays = document.querySelectorAll(".code-display");
     const codeDisplayTabsContainer = document.querySelector(".code-display-tab-container");
     const tabs = codeDisplayTabsContainer.children;
@@ -15,10 +16,17 @@ function initLoad(){
             codeDisplays[i].style.display = "block";
             selectedTab = i;
         }
-    }
+    }*/
 
     loadChaosButtonLogic();
     loadAgentLogic();
+    resize();
+}
+function resizeConsole(){
+    const consoleContainer = document.querySelector(".console-container");
+    const agentContainer = document.querySelector(".agent-container");
+    const agentHeight = agentContainer.getBoundingClientRect().height;
+    consoleContainer.style.height = agentHeight + "px";
 }
 
 function randomInteger(min, max){
@@ -72,7 +80,7 @@ function consoleLog(text, color){
     if(color){
         switch(color){
             default:break;
-            case "red":    consoleLog.style.color = "rgb(231, 76, 60)";  break;
+            case "red":    consoleLog.style.color = "rgb(231,  76, 60)"; break;
             case "yellow": consoleLog.style.color = "rgb(241, 196, 15)"; break;
             case "green":  consoleLog.style.color = "rgb(46, 204, 113)"; break;
             case "blue":   consoleLog.style.color = "rgb(80, 118, 246)"; break;
@@ -81,7 +89,7 @@ function consoleLog(text, color){
 
     setTimeout(()=>{
         const consoleLogBody = document.querySelector(".console-body");
-        consoleLogBody.scrollTop = consoleLogBody.scrollHeight
+        consoleLogBody.scrollTop = consoleLogBody.scrollHeight;
     }, 0);
 }
 
@@ -415,6 +423,7 @@ function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn){
     
     if(!agentToSpawn) consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
     generateAgentDIV(version, newAgent.nodeIndex, agentID, agentToSpawn);
+    resizeConsole();
 
     agentCount++; agentID++;
     return [nodeID, agentID, agentCount, nodes, newAgent.nodeIndex];

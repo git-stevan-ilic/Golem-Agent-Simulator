@@ -188,6 +188,7 @@ pre{
     width:100%;
 }
 .console-log{
+    color:rgb(150, 150, 150);
     width:calc(100% - 1rem);
     margin-left:0.5rem;
     margin-top:0.5rem;

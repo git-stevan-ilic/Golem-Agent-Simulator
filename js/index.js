@@ -212,12 +212,20 @@ function loadAgentLogic(){
         orbColorChange.className = "orb-color-change";
         selectedOrb.appendChild(orbColorChange);
         selectedOrb.classList.remove("orb-success");
+
+        const orbFailIcon = document.createElement("div");
+        orbFailIcon.className = "orb-fail-icon";
+        orbColorChange.appendChild(orbFailIcon);
+
         orbColorChange.onanimationend = (e)=>{
             e.stopPropagation();
             setTimeout(()=>{
                 orbColorChange.style.animation = "orb-to-yellow ease-in-out 0.2s forwards";
                 orbColorChange.onanimationend = (e)=>{
                     e.stopPropagation();
+
+                    orbFailIcon.style.animation = "fade-out ease-in-out 0.1s forwards";
+                    orbFailIcon.onanimationend = ()=>{orbFailIcon.remove()}
 
                     void orbColorChange.offsetWidth;
                     setTimeout(()=>{

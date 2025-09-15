@@ -20,7 +20,7 @@ function initLoad(){
 
     loadChaosButtonLogic();
     loadAgentLogic();
-    resize();
+    resizeConsole();
 }
 function resizeConsole(){
     const consoleContainer = document.querySelector(".console-container");
@@ -224,7 +224,7 @@ function loadAgentLogic(){
                 orbColorChange.onanimationend = (e)=>{
                     e.stopPropagation();
 
-                    orbFailIcon.style.animation = "fade-out ease-in-out 0.1s forwards";
+                    orbFailIcon.style.animation = "fade-out ease-in-out 0.2s forwards";
                     orbFailIcon.onanimationend = ()=>{orbFailIcon.remove()}
 
                     void orbColorChange.offsetWidth;
@@ -245,14 +245,19 @@ function loadAgentLogic(){
         }
     });
     window.addEventListener("suspend-agent", ()=>{
-        const nodeIndex = randomInteger(0, nodes.length-1);
+        let nodeIndex, loopCount = 0;
+        while(loopCount < 100){
+            nodeIndex = randomInteger(0, nodes.length-1);
+            if(nodes[nodeIndex].agents.length > 0) break;
+        }
+        if(loopCount >= 100) return;
+
         const agentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
         const agentDivID = "agent-"+nodes[nodeIndex].agents[agentIndex].id;
-        
         const agentDiv = document.getElementById(agentDivID);
         if(!agentDiv) return;
         nodes[nodeIndex].agents[agentIndex].active = false;
-        consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} suspended (awaiting approval) with state preserved");
+        consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} suspended (awaiting approval) with state preserved", "yellow");
 
         fadeOut("#"+agentDivID, 0.1, ()=>{
             agentDiv.style.opacity = 0;
@@ -260,15 +265,29 @@ function loadAgentLogic(){
             agentDiv.style.animation = "agent-shrink ease-in-out 0.1s";
 
             agentDiv.onanimationend = ()=>{
-                suspended.push(nodes[nodeIndex].agents[agentIndex]);
+                const currAgent = nodes[nodeIndex].agents[agentIndex];
                 nodes[nodeIndex].agents.splice(agentIndex, 1);
+                suspended.push(currAgent);
 
                 const suspendedAgentContainer = document.querySelector(".suspended-agent-container");
                 suspendedAgentContainer.appendChild(agentDiv);
                 const agentDivIcon = agentDiv.children[0];
                 agentDivIcon.classList.add("agent-sleep");
                 fadeIn("#"+agentDivID, "flex", 0.1, ()=>{
+                    agentDiv.style.cursor = "pointer";
                     agentDiv.style.opacity = 1;
+                    agentDiv.onclick = ()=>{
+                        agentDiv.onclick = null;
+                        fadeOut("#"+agentDivID, 0.1, ()=>{
+                            [nodeID, agentID, agentCount, nodes] = spawnAgent(version, nodeID, agentID, agentCount, nodes, currAgent, true);
+                            for(let i = 0; i < suspended.length; i++){
+                                if(suspended[i].id === currAgent.id){
+                                    suspended.splice(i, 1);
+                                    break;
+                                }
+                            }
+                        });
+                    }
                 });
             }
         });
@@ -396,7 +415,7 @@ function spawnNode(nodeID, nodes){
 
     return [nodeID, nodes];
 }
-function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn){
+function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn, resumed){
     const externalCallMaxTime = Math.floor(Math.random() * 5) + 5;
     let newAgent;
     if(agentToSpawn){
@@ -429,6 +448,7 @@ function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn){
         newAgent.nodeIndex = nodeID - 1;
     }
     
+    if(resumed) consoleLog("Agent-{"+agentToSpawn.id+"} resumed on Node {"+agentToSpawn.id+"} via built-in API", "green");
     if(!agentToSpawn) consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
     generateAgentDIV(version, newAgent.nodeIndex, agentID, agentToSpawn);
     resizeConsole();

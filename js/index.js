@@ -245,6 +245,7 @@ function loadAgentLogic(){
         }
     });
     window.addEventListener("suspend-agent", ()=>{
+        console.log(nodes, suspended)
         let nodeIndex, loopCount = 0;
         while(loopCount < 100){
             nodeIndex = randomInteger(0, nodes.length-1);
@@ -276,9 +277,11 @@ function loadAgentLogic(){
                 fadeIn("#"+agentDivID, "flex", 0.1, ()=>{
                     agentDiv.style.cursor = "pointer";
                     agentDiv.style.opacity = 1;
+                    
                     agentDiv.onclick = ()=>{
                         agentDiv.onclick = null;
                         fadeOut("#"+agentDivID, 0.1, ()=>{
+                            document.querySelector("#"+agentDivID).remove();
                             [nodeID, agentID, agentCount, nodes] = spawnAgent(version, nodeID, agentID, agentCount, nodes, currAgent, true);
                             for(let i = 0; i < suspended.length; i++){
                                 if(suspended[i].id === currAgent.id){

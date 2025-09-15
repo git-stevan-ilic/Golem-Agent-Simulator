@@ -245,7 +245,6 @@ function loadAgentLogic(){
         }
     });
     window.addEventListener("suspend-agent", ()=>{
-        console.log(nodes, suspended)
         let nodeIndex, loopCount = 0;
         while(loopCount < 100){
             nodeIndex = randomInteger(0, nodes.length-1);
@@ -277,7 +276,7 @@ function loadAgentLogic(){
                 fadeIn("#"+agentDivID, "flex", 0.1, ()=>{
                     agentDiv.style.cursor = "pointer";
                     agentDiv.style.opacity = 1;
-                    
+
                     agentDiv.onclick = ()=>{
                         agentDiv.onclick = null;
                         fadeOut("#"+agentDivID, 0.1, ()=>{
@@ -845,9 +844,14 @@ function loadChaosButtonEvents(){
     }
 }
 function chaosTriggerButton(index){
-    const innerHTML = getChaosPopupText(index);
-    const popUpText = document.querySelector(".pop-up-text");
-    popUpText.innerHTML = innerHTML;
+    const popUpData = getChaosPopupText(index);
+    const popUpTextColumnValue = document.querySelectorAll(".pop-up-text-column-value");
+    popUpTextColumnValue[0].innerHTML = popUpData.outcome;
+    popUpTextColumnValue[1].innerHTML = popUpData.guarantee;
+    popUpTextColumnValue[2].innerHTML = "";
+    for(let i = 0; i < popUpData.avoid.length; i++){
+        popUpTextColumnValue[2].innerHTML += "· " + popUpData.avoid[i]+"<br>";
+    }
 
     fadeIn("#pop-up-mask", "block", 0.1, ()=>{
         const pauseLoopEvent = new Event("pause-loop");
@@ -877,90 +881,65 @@ function chaosTriggerButton(index){
 }
 function getChaosPopupText(index){
     const allHTMLs = [
-        `
-        <b>Outcome:</b><br> New agent created
-        instantly via Golem's built-in
-        API — no extra setup.<br><br>
-        <b>Guarantee:</b><br> Starts isolated,
-        logged, and ready in
-        milliseconds.<br><br>
-        <b>Infrastructure You Avoid:</b><br>
-        Web servers · Auth plumbing ·
-        Message brokers
-        `,
-        `
-        <b>Outcome:</b><br> Node goes offline;
-        its agents resume
-        automatically on a healthy
-        node.<br><br>
-        <b>Guarantee:</b><br> No lost state, no
-        duplicate work.<br><br>
-        <b>Infrastructure You Avoid:</b><br>
-        Leader election/consensus ·
-        Idempotency tables
-        `,
-        `
-        <b>Outcome:</b><br> External call
-        (API/tool/message) fails, then
-        retries automatically.<br><br>
-        <b>Guarantee:</b><br> Exactly-once
-        execution for external side
-        effects; durable delivery for
-        internal messages — no
-        double charges, no missed
-        signals.<br><br>
-        <b>Infrastructure You Avoid:</b><br>
-        Retry queues · Dead-letter
-        handling ·
-        Backoff/orchestration code
-        `,
-        `
-        <b>Outcome:</b><br> Running agent
-        pauses without incurring cost.<br><br>
-        <b>Guarantee:</b><br> Unlimited pause
-        with durable state; resumes
-        instantly. Supports human
-        approval, scheduled
-        wake-ups, and idle standby.<br><br>
-        <b>Infrastructure You Avoid:</b><br>
-        Cron services · Polling loops ·
-        Custom timers
-        `,
-        `
-        <b>Outcome:</b><br> Faulty agent
-        contained; other agents
-        unaffected.<br><br>
-        <b>Guarantee:</b><br> Process, data,
-        and permission isolation —
-        one agent can't crash, read, or
-        act as another.<br><br>
-        <b>Infrastructure You Avoid:</b><br>
-        Container hardening ·
-        RBAC/least-privilege wiring
-        `,
-        `
-        <b>Outcome:</b><br> Full execution
-        history appears with rewind
-        and safe replay<br><br>
-        <b>Guarantee:</b><br> Roll back to an
-        earlier point to correct
-        dead-ends and errant AI
-        decisions.<br><br>
-        <b>Infrastructure You Avoid:</b><br>
-        Distributed tracing stack ·
-        One-off debug tooling
-        `,
-        `
-        <b>Outcome:</b><br> Ship a new version
-        side-by-side or migrate live
-        agents without downtime.<br><br>
-        <b>Guarantee:</b><br> Zero-downtime
-        upgrades with controlled
-        roll-forward.<br><br>
-        <b>Infrastructure You Avoid:</b><br>
-        Rolling-deploy scripts ·
-        Drain/coordination logic
-        `
+        {
+            outcome:"New agent created instantly via Golem's built-in API — no extra setup.",
+            guarantee:"Starts isolated, logged, and ready in milliseconds",
+            avoid:[
+                "Web servers",
+                "Auth plumbing",
+                "Message brokers"
+            ]
+        },
+        {
+            outcome:"Node goes offline; its agents resume automatically on a healthy node",
+            guarantee:"No lost state, no duplicate work.",
+            avoid:[
+                "Leader election/consensus",
+                "Idempotency tables"
+            ]
+        },
+        {
+            outcome:"External call (API/tool/message) fails, then retries automatically.",
+            guarantee:"Exactly-once execution for external side effects; durable delivery for internal messages — no double charges, no missed signals",
+            avoid:[
+                "Retry queues",
+                "Dead-letter handling",
+                "Backoff/orchestration code"
+            ]
+        },
+        {
+            outcome:"Running agent pauses without incurring cost.",
+            guarantee:"Unlimited pause with durable state; resumes instantly. Supports human approval, scheduled wake-ups, and idle standby.",
+            avoid:[
+                "Cron services",
+                "Polling loops",
+                "Custom timers"
+            ]
+        },
+        {
+            outcome:"Faulty agent contained; other agents unaffected.",
+            guarantee:"Process, data, and permission isolation — one agent can't crash, read, or act as another.",
+            avoid:[
+                "Container hardening",
+                "RBAC/least-privilege wiring"
+            ]
+        },
+        {
+            outcome:"Full execution history appears with rewind and safe replay",
+            guarantee:"Roll back to an earlier point to correct dead-ends and errant AI decisions.",
+            avoid:[
+                "Distributed tracing stack",
+                "One-off debug tooling"
+            ]
+        },
+        {
+            outcome:"Ship a new version side-by-side or migrate live agents without downtime.",
+            guarantee:"Zero-downtime upgrades with controlled roll-forward.",
+            avoid:[
+                "Rolling-deploy scripts",
+                "Drain/coordination logic"
+            ]
+        }
     ];
 
     return allHTMLs[index]

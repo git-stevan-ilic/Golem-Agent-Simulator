@@ -15,6 +15,9 @@
     .CTA-bar{
         font-size:0.8rem;
     }
+    .CTA-button{
+        font-size:0.8rem;
+    }
     .pop-up-text{
         flex-direction:column;
     }

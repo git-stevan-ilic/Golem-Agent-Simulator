@@ -116,10 +116,9 @@ button:disabled:active{
 
 .CTA-bar{
     background-color:var(--base-color-2);
-    border-radius:var(--border-radius-3);
-    transform:translateY(-50%);
+    transform:translateY(50%);
     color:var(--base-color-4);
-    margin-top:1rem;
+    font-size:1.5rem;
     width:100%;
     opacity:0;
     height:0;
@@ -130,8 +129,18 @@ button:disabled:active{
 }
 .CTA-bar-extended{
     transform:translateY(0%);
-    height:2.5rem;
+    height:5rem;
     opacity:1; 
+}
+.CTA-button{
+    background-color:var(--base-color-2);
+    color:var(--base-color-4);
+    font-size:1.25rem;
+    margin-left:1rem;
+    height:3rem;
+}
+.CTA-button:hover{
+    background-color:var(--base-color-3);
 }
 
 /*--Side Button Bar----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -186,6 +195,6 @@ button:disabled:active{
     to   {transform:translateX(-100%);}
 }
 @keyframes CTA-bar-slide{
-    from {transform:translateY(-50%); opacity:0; height:0rem;}
-    to   {transform:translateY(0%); opacity:1; height:2.5rem;}
+    from {transform:translateY(50%); opacity:0; height:0rem;}
+    to   {transform:translateY(0%); opacity:1; height:5rem;}
 }

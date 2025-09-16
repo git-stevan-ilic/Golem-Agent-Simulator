@@ -802,6 +802,7 @@ function loadChaosButtonLogic(){
                 CTAbar.classList.add("CTA-bar-extended");
                 CTAbar.style.animation = "none";
                 CTAbar.onanimationend = null;
+                window.scrollTo(0, document.body.scrollHeight);
             }
         }
     }

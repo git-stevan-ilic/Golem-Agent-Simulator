@@ -247,6 +247,15 @@ pre{
 .window-foot > button{
     width:5rem;
 }
+.window-body-sub-text{
+    justify-content:center;
+    align-items:center;
+    display:flex;
+
+    font-size:1.2rem;
+    margin-top:2rem;
+    width:100%;
+}
 
 .pop-up-text{
     transform:translate(-50%);
@@ -336,18 +345,22 @@ input[type=range]{
     width:100%;
 }
 
-.update-text{
-    justify-content:center;
-    align-items:center;
-    font-weight:bold;
-    display:flex;
 
-    font-size:1.2rem;
-    width:100%;
+
+
+
+
+
+
+
+.update-tile-prompt{
+    display:none;
 }
 .update-tile-container{
-    margin-bottom:-2rem;
-    margin-top:2rem;
+    transform:translate(-50%);
+    margin-bottom:1rem;
+    margin-top:1rem;
+    margin-left:50%;
     width:20rem;
     max-width:100%;
 

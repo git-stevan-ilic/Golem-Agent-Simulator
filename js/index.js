@@ -95,7 +95,7 @@ function consoleLog(text, color){
 
 /*--Agent Logic--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 function loadAgentLogic(){
-    let agentID = 1, nodeID = 1, agentCount = 0, version = 1,nodes = [], suspended = [];
+    let agentID = 1, nodeID = 1, agentCount = 0, version = 1, nodes = [], suspended = [];
     for(let i = 0; i < 3; i++) [nodeID, nodes] = spawnNode(nodeID, nodes);
     for(let i = 0; i < 5; i++) [nodeID, agentID, agentCount, nodes] = spawnAgent(version, nodeID, agentID, agentCount, nodes);
 
@@ -317,7 +317,7 @@ function loadAgentLogic(){
         agentDiv.style.animation = "agent-shake ease-in-out 0.25s, agent-crash ease-in-out 0.25s forwards";
     });
     window.addEventListener("troubleshoot", ()=>{
-        const nodeIndex = randomInteger(0, nodes.length-1);
+        /*const nodeIndex = randomInteger(0, nodes.length-1);
         const agentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
         const agentDivID = "agent-"+nodes[nodeIndex].agents[agentIndex].id;
         
@@ -358,34 +358,39 @@ function loadAgentLogic(){
         }
         document.getElementById("version-window").onclick = (e)=>{e.stopPropagation()}
         document.getElementById("version-mask").onclick = closeModal;
-        document.getElementById("version-ok").onclick = closeModal;
+        document.getElementById("version-ok").onclick = closeModal;*/
     });
-    window.addEventListener("update-agent", ()=>{
+    window.addEventListener("update-agent", (e)=>{
         const pauseLoopEvent = new Event("pause-loop");
         window.dispatchEvent(pauseLoopEvent);
 
-        const updateTiles = document.querySelectorAll(".update-tile");
-        for(let i = 0; i < updateTiles.length; i++){
-            updateTiles[i].onclick = ()=>{
+        if(e.detail.chosen > -1){
+            if(e.detail.chosen === 0){
                 version++;
-                const agentText = document.querySelectorAll(".agent-text");
-                for(let j = 0; j < agentText.length; j++){
-                    const vPos = agentText[j].innerText.indexOf("v");
-                    if(vPos === -1) agentText[j].innerText += " v2";
-                    else{
-                        const text = agentText[j].innerText.slice(0, vPos);
-                        agentText[j].innerText = text + " v"+version;
+                consoleLog("Version {v"+version+"} deployed;", "green");
+            }
+            else if(e.detail.chosen === 1){
+                let agentNum = 0;
+                version++;
+                for(let i = 0; i < nodes.length; i++){
+                    for(let j = 0; j < nodes[i].agents.length; j++){
+                        nodes[i].agents[j].version = version;
+                        agentNum++;
+
+                        const agentText = document.querySelector("#agent-text-"+nodes[i].agents[j].id);
+                        const vPos = agentText.innerText.indexOf("v");
+                        if(vPos === -1) agentText.innerText += " v"+nodes[i].agents[j].version;
+                        else{
+                            const text = agentText.innerText.slice(0, vPos);
+                            agentText.innerText = text + " v"+nodes[i].agents[j].version;
+                        }
                     }
                 }
-                
-                const resumeLoopEvent = new Event("resume-loop");
-                window.dispatchEvent(resumeLoopEvent);
-                fadeOut("#update-mask", 0.1, null);
-                consoleLog("Version {v"+version+"} deployed; {"+agentText.length+"} agents migrated with zero downtime", "green");
+                consoleLog("Version {v"+version+"} deployed; {"+agentNum+"} agents migrated with zero downtime", "green");
             }
+            const resumeLoopEvent = new Event("resume-loop");
+            window.dispatchEvent(resumeLoopEvent);
         }
-
-        fadeIn("#update-mask", "block", 0.1, null);
     });
 }
 function spawnNode(nodeID, nodes){
@@ -427,9 +432,10 @@ function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn, r
     else{
         newAgent = {
             id:agentID,
-            state:0,
+            state:[],
             error:-1,
             active:true,
+            version:version,
             externalCallMaxTime:externalCallMaxTime,
             externalCallTime:randomInteger(0, externalCallMaxTime)
         }
@@ -452,7 +458,7 @@ function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn, r
     
     if(resumed) consoleLog("Agent-{"+agentToSpawn.id+"} resumed on Node {"+agentToSpawn.id+"} via built-in API", "green");
     if(!agentToSpawn) consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
-    generateAgentDIV(version, newAgent.nodeIndex, agentID, agentToSpawn);
+    generateAgentDIV(newAgent.version, newAgent.nodeIndex, agentID, agentToSpawn);
     resizeConsole();
 
     agentCount++; agentID++;
@@ -473,6 +479,7 @@ function generateAgentDIV(version, nodeIndex, agentID, agentToSpawn){
     agentDivIcon.className = "agent-icon";
     agentDivText.className = "agent-text";
     agentDivText.innerText = "Agent " + agentDivID + versionText;
+    agentDivText.id = "agent-text-"+agentDivID;
     agentDiv.id = "agent-"+agentDivID;
 
     agentDiv.appendChild(agentDivIcon);
@@ -555,7 +562,7 @@ function externalCallLogic(nodes){
             const externalPathIndex = Math.floor(Math.random() * externalPaths.length);
             const external = externalPaths[externalPathIndex];
 
-            agent.state++;
+            //agent.state++;
             const logMessage = "Agent-{"+agent.id+"} on Node {"+agent.nodeIndex+"} called "+externalConsoleMessages[externalPathIndex];
             let nextPath = [
                 {element:".spine-path", vertical:true, startPosition:(agent.nodeIndex - 1), endPosition:null},
@@ -617,7 +624,7 @@ function internalCallLogic(internalCallCountDown, agentCount, nodes){
         }
     }
 
-    agent1.state++;
+    //agent1.state++;
     const mode = getPathMode();
     if(mode === 0 && (agent1.nodeIndex - 1) % 2 === 1) startPosition = 1 - startPosition;
     if(mode === 0 && (agent2.nodeIndex - 1) % 2 === 1) endPosition = 1 - endPosition;
@@ -854,6 +861,21 @@ function chaosTriggerButton(index){
         popUpTextColumnValue[2].innerHTML += "· " + popUpData.avoid[i]+"<br>";
     }
 
+    const eventData = {detail:{chosen:-1}};
+    switch(index){
+        default: document.querySelector(".update-tile-prompt").style.display = "none"; break;
+        case 6:
+            document.querySelector(".update-tile-prompt").style.display = "block";
+            const updateTiles = document.querySelectorAll(".update-tile");
+            for(let i = 0; i < updateTiles.length; i++){
+                updateTiles[i].onclick = ()=>{
+                    eventData.detail = {chosen:i}
+                    closeModal();
+                }
+            }
+            break;
+    }
+
     fadeIn("#pop-up-mask", "block", 0.1, ()=>{
         const pauseLoopEvent = new Event("pause-loop");
         window.dispatchEvent(pauseLoopEvent);
@@ -870,7 +892,7 @@ function chaosTriggerButton(index){
                 const resumeLoopEvent = new Event("resume-loop");
                 window.dispatchEvent(resumeLoopEvent);
 
-                const chaosEvent = new Event(chaosEvents[index]);
+                const chaosEvent = new CustomEvent(chaosEvents[index], eventData);
                 window.dispatchEvent(chaosEvent);
             }, 250);
         });

@@ -308,7 +308,7 @@ function loadAgentLogic(){
         const agentDiv = document.getElementById(agentDivID);
         if(!agentDiv) return;
         nodes[nodeIndex].agents[agentIndex].active = false;
-        nodes[nodeIndex].agents[agentIndex].error = nodes[nodeIndex].agents[agentIndex].state;
+        nodes[nodeIndex].agents[agentIndex].error = nodes[nodeIndex].agents[agentIndex].state.length;
         consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} crashed in sandbox", "red");
         consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} fault contained", "green");
 
@@ -392,6 +392,11 @@ function loadAgentLogic(){
             window.dispatchEvent(resumeLoopEvent);
         }
     });
+
+    window.oncontextmenu = (e)=>{
+        e.preventDefault();
+        console.log(nodes, version)
+    }
 }
 function spawnNode(nodeID, nodes){
     const nodeConatiner = document.querySelector(".node-conatiner");
@@ -562,8 +567,8 @@ function externalCallLogic(nodes){
             const externalPathIndex = Math.floor(Math.random() * externalPaths.length);
             const external = externalPaths[externalPathIndex];
 
-            //agent.state++;
             const logMessage = "Agent-{"+agent.id+"} on Node {"+agent.nodeIndex+"} called "+externalConsoleMessages[externalPathIndex];
+            agent.state.push(logMessage);
             let nextPath = [
                 {element:".spine-path", vertical:true, startPosition:(agent.nodeIndex - 1), endPosition:null},
                 {element:external, vertical:true, startPosition:0, endPosition:null}
@@ -624,7 +629,7 @@ function internalCallLogic(internalCallCountDown, agentCount, nodes){
         }
     }
 
-    //agent1.state++;
+    agent1.state.push("Agent-{"+agent1.id+"} on Node {"+agent1.nodeIndex+"} sent an internal message to Agent-{"+agent2.id+"} on Node {"+agent2.nodeIndex+"}");
     const mode = getPathMode();
     if(mode === 0 && (agent1.nodeIndex - 1) % 2 === 1) startPosition = 1 - startPosition;
     if(mode === 0 && (agent2.nodeIndex - 1) % 2 === 1) endPosition = 1 - endPosition;

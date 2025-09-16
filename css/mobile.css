@@ -19,10 +19,30 @@
         font-size:0.8rem;
     }
     .pop-up-text{
+        margin-top:0.5rem;
+    }
+    .pop-up-text-column{
+        margin-bottom:0.5rem;
+        width:calc(32% - 2rem);
+    }
+    .pop-up-text-column-title{
+        font-size:0.9rem;
+    }
+    .pop-up-text-column-value{
+        font-size:0.75rem;
+    }
+    .window-body{
+        width:calc(100% - 2rem);
+        padding-right:1rem;
+        padding-left:1rem;
+        padding-top:0.5rem;
+    }
+}
+@media only screen and (max-width:768px) and (orientation:portrait){
+    .pop-up-text{
         flex-direction:column;
     }
     .pop-up-text-column{
-        margin-bottom:1rem;
         width:calc(100% - 2rem - 2px);
     }
 }

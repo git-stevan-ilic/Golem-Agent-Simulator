@@ -316,49 +316,39 @@ function loadAgentLogic(){
         agentDivIcon.classList.add("agent-error");
         agentDiv.style.animation = "agent-shake ease-in-out 0.25s, agent-crash ease-in-out 0.25s forwards";
     });
-    window.addEventListener("troubleshoot", ()=>{
-        /*const nodeIndex = randomInteger(0, nodes.length-1);
+    window.addEventListener("agent-history", ()=>{
+        const troubleshootWindow = document.querySelector(".troubleshoot-window");
+        while(troubleshootWindow.children.length > 0) troubleshootWindow.removeChild(troubleshootWindow.lastChild);
+
+        const nodeIndex = randomInteger(0, nodes.length-1);
         const agentIndex = randomInteger(0, nodes[nodeIndex].agents.length-1);
         const agentDivID = "agent-"+nodes[nodeIndex].agents[agentIndex].id;
-        
+            
         const agentDiv = document.getElementById(agentDivID);
         if(!agentDiv) return;
 
-        const pauseLoopEvent = new Event("pause-loop");
-        window.dispatchEvent(pauseLoopEvent);
+        document.querySelector("#agent-history-title").innerHTML = "Agent "+nodes[nodeIndex].agents[agentIndex].id+" History:";
+        for(let i = 0; i < nodes[nodeIndex].agents[agentIndex].state.length; i++){
+            const row = document.createElement("div");
+            row.className = "troubleshoot-window-row";
+            row.innerHTML = nodes[nodeIndex].agents[agentIndex].state[i];
+            troubleshootWindow.appendChild(row);
 
-        const versionSlide = document.querySelector("#version-slide");
-        const versionValue = document.querySelector(".version-value");
-        versionValue.innerText = "Version: " + nodes[nodeIndex].agents[agentIndex].state;
-        versionSlide.max = nodes[nodeIndex].agents[agentIndex].state;
-        versionSlide.min = 0;
-        versionSlide.value = versionSlide.max;
-        versionSlide.oninput = ()=>{
-            versionValue.innerText = "Version: " + versionSlide.value;
+            row.onclick = ()=>{
+                nodes[nodeIndex].agents[agentIndex].state.splice(i + 1);
+                consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} rewound to earlier state for safe replay", "green");
+                closeModal();
+            }
         }
 
-        fadeIn("#version-mask", "block", 0.1, null);
-
         function closeModal(){
-            fadeOut("#version-mask", 0.1, ()=>{
+            fadeOut("#pop-up-mask", 0.1, ()=>{
                 setTimeout(()=>{
                     const resumeLoopEvent = new Event("resume-loop");
                     window.dispatchEvent(resumeLoopEvent);
-
-                    nodes[nodeIndex].agents[agentIndex].state = parseInt(versionSlide.value);
-                    if(nodes[nodeIndex].agents[agentIndex].state < nodes[nodeIndex].agents[agentIndex].error){
-                        nodes[nodeIndex].agents[agentIndex].error = -1;
-                        const agentDivIcon = agentDiv.children[0];
-                        agentDivIcon.classList.remove("agent-error");
-                        agentDiv.style.animation = "none";
-                    }
-                    consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} rewound to earlier state for safe replay", "green");
                 }, 250);
             });
         }
-        document.getElementById("version-window").onclick = (e)=>{e.stopPropagation()}
-        document.getElementById("version-mask").onclick = closeModal;
-        document.getElementById("version-ok").onclick = closeModal;*/
     });
     window.addEventListener("update-agent", (e)=>{
         const pauseLoopEvent = new Event("pause-loop");
@@ -367,7 +357,7 @@ function loadAgentLogic(){
         if(e.detail.chosen > -1){
             if(e.detail.chosen === 0){
                 version++;
-                consoleLog("Version {v"+version+"} deployed;", "green");
+                consoleLog("Version {v"+version+"} deployed; No active agents affected", "green");
             }
             else if(e.detail.chosen === 1){
                 let agentNum = 0;
@@ -392,11 +382,6 @@ function loadAgentLogic(){
             window.dispatchEvent(resumeLoopEvent);
         }
     });
-
-    window.oncontextmenu = (e)=>{
-        e.preventDefault();
-        console.log(nodes, version)
-    }
 }
 function spawnNode(nodeID, nodes){
     const nodeConatiner = document.querySelector(".node-conatiner");
@@ -461,8 +446,14 @@ function spawnAgent(version, nodeID, agentID, agentCount, nodes, agentToSpawn, r
         newAgent.nodeIndex = nodeID - 1;
     }
     
-    if(resumed) consoleLog("Agent-{"+agentToSpawn.id+"} resumed on Node {"+agentToSpawn.id+"} via built-in API", "green");
-    if(!agentToSpawn) consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
+    if(resumed){
+        consoleLog("Agent-{"+agentToSpawn.id+"} resumed on Node {"+agentToSpawn.id+"} via built-in API", "green");
+        newAgent.state.push("Agent-{"+agentToSpawn.id+"} resumed on Node {"+agentToSpawn.id+"} via built-in API");
+    }
+    if(!agentToSpawn){
+        consoleLog("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API");
+        newAgent.state.push("Agent-{"+agentID+"} created on Node {"+newAgent.nodeIndex+"} via built-in API")
+    }
     generateAgentDIV(newAgent.version, newAgent.nodeIndex, agentID, agentToSpawn);
     resizeConsole();
 
@@ -866,11 +857,23 @@ function chaosTriggerButton(index){
         popUpTextColumnValue[2].innerHTML += "· " + popUpData.avoid[i]+"<br>";
     }
 
+    const troubleshootPrompt = document.querySelector(".troubleshoot-prompt");
+    const updateTilePrompt = document.querySelector(".update-tile-prompt");
     const eventData = {detail:{chosen:-1}};
     switch(index){
-        default: document.querySelector(".update-tile-prompt").style.display = "none"; break;
+        default:
+            troubleshootPrompt.style.display = "none";
+            updateTilePrompt.style.display = "none";
+            break;
+        case 5:
+            troubleshootPrompt.style.display = "block";
+            updateTilePrompt.style.display = "none";
+            const agentHistoryEvent = new Event("agent-history");
+            window.dispatchEvent(agentHistoryEvent);
+            break;
         case 6:
-            document.querySelector(".update-tile-prompt").style.display = "block";
+            troubleshootPrompt.style.display = "none";
+            updateTilePrompt.style.display = "block";
             const updateTiles = document.querySelectorAll(".update-tile");
             for(let i = 0; i < updateTiles.length; i++){
                 updateTiles[i].onclick = ()=>{

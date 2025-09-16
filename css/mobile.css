@@ -37,6 +37,14 @@
         padding-left:1rem;
         padding-top:0.5rem;
     }
+    .troubleshoot-window{
+        max-height:10rem;
+        min-height:2rem;
+    }
+    .troubleshoot-window-row{
+        font-size:0.75rem;
+        height:2rem;
+    }
 }
 @media only screen and (max-width:768px) and (orientation:portrait){
     .pop-up-text{

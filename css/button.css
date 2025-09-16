@@ -4,7 +4,7 @@ button{
     background-color:var(--base-color-1);
     border-radius:var(--border-radius-3);
     color:var(--base-color-5);
-    font-family:"Inter";
+    font-family:"Poppins";
     cursor:pointer;
     font-size:1rem;
     padding:0.5rem;
@@ -88,6 +88,7 @@ button:disabled:active{
     align-items:center;
     display:flex;
 
+    font-size:0.9rem;
     height:100%;
     width:100%;
 }

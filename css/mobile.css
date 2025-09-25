@@ -20,6 +20,7 @@
     }
     .pop-up-text{
         margin-top:0.5rem;
+        
     }
     .pop-up-text-column{
         margin-bottom:0.5rem;
@@ -49,6 +50,7 @@
 @media only screen and (max-width:768px) and (orientation:portrait){
     .pop-up-text{
         flex-direction:column;
+        width:30rem;
     }
     .pop-up-text-column{
         width:calc(100% - 2rem - 2px);

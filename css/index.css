@@ -262,7 +262,7 @@ pre{
     margin-left:50%;
     margin-top:1rem;
 
-    width:50rem;
+    width:60rem;
     max-width:calc(100vw - 5rem);
 
     justify-content:space-between;
@@ -289,9 +289,11 @@ pre{
     text-align:center;
     font-weight:bold;
     display:flex;
+    white-space:nowrap;
 
     margin-bottom:1rem;
     font-size:1.25rem;
+    height:2rem;
     width:100%;
 }
 .pop-up-text-column-value{

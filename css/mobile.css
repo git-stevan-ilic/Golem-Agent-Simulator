@@ -55,16 +55,19 @@
     }
 }
 @media only screen and (max-width:780px){
-    .spine-path{
-        left:90%;
-    }
     .node-paths{
         transform:translate(0%);
         width:calc(100% - 8rem);
         left:8rem;
+
+        height:calc(100% - 14rem);
+        flex-direction:column;
+    }
+    .spine-path{
+        left:33rem;
     }
     .h-path{
-        width:calc(90% - 1rem);
+        width:24.5rem;
     }
     .h-path:nth-child(even){
         transform:scaleX(1);
@@ -99,6 +102,9 @@
     .note-head{
         width:2rem;
     }
+    .agent{
+        width:11.5rem;
+    }
 }
 @media only screen and (max-width:1300px){
     .chaos-button{
@@ -108,8 +114,12 @@
     }
 }
 @media only screen and (min-width:1001px) and (max-width:1466px){
+    .node-paths{
+        height:calc(100% - 13rem);
+        flex-direction:column;
+    }
     .spine-path{
-        left:90%;
+        left:33rem;
     }
     .node-paths{
         transform:translate(0%);
@@ -117,21 +127,32 @@
         left:8rem;
     }
     .h-path{
-        width:calc(90% - 1rem);
+        width:24.5rem;
     }
     .h-path:nth-child(even){
         transform:scaleX(1);
     }
 }
 @media only screen and (max-width:460px){
-    .spine-path{
-        transform:translateX(75%);
-    }
     .node-paths{
+        transform:translate(0%);
         width:calc(100% - 7rem);
+        left:8rem;
+
+        height:calc(100% - 14rem);
+        flex-direction:column;
+    }
+    .spine-path{
+        left:calc(100% - 1.5rem);
     }
     .h-path{
         width:calc(90% - 1rem);
+    }
+    .node-body{
+        width:100%;
+    }
+    .agent{
+        width:100%;
     }
 }
 @media only screen and (min-width:1880px){

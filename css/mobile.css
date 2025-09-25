@@ -46,6 +46,10 @@
         font-size:0.75rem;
         height:2rem;
     }
+    .troubleshoot-window-row-button{
+        font-size:0.75rem;
+        height:1.5rem;
+    }
 }
 @media only screen and (max-width:768px) and (orientation:portrait){
     .pop-up-text{

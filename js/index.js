@@ -331,10 +331,19 @@ function loadAgentLogic(){
         for(let i = 0; i < nodes[nodeIndex].agents[agentIndex].state.length; i++){
             const row = document.createElement("div");
             row.className = "troubleshoot-window-row";
-            row.innerHTML = nodes[nodeIndex].agents[agentIndex].state[i];
             troubleshootWindow.appendChild(row);
 
-            row.onclick = ()=>{
+            const rowText = document.createElement("div");
+            rowText.className = "troubleshoot-window-row-text";
+            rowText.innerHTML = nodes[nodeIndex].agents[agentIndex].state[i];
+            row.appendChild(rowText);
+
+            const rowButton = document.createElement("button");
+            rowButton.className = "troubleshoot-window-row-button";
+            rowButton.innerHTML = "Restore to this point";
+            row.appendChild(rowButton);
+
+            rowButton.onclick = ()=>{
                 nodes[nodeIndex].agents[agentIndex].state.splice(i + 1);
                 consoleLog("Agent-{"+nodes[nodeIndex].agents[agentIndex].id+"} rewound to earlier state for safe replay", "green");
                 closeModal();

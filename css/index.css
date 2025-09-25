@@ -319,21 +319,29 @@ pre{
     max-height:15rem;
 }
 .troubleshoot-window-row{
-    width:calc(100% - 2rem);
-    padding-right:1rem;
+    width:calc(100% - 1.2rem);
+    padding-right:0.2rem;
     padding-left:1rem;
     height:3rem;
 
     justify-content:flex-start;
     align-items:center;
-    cursor:pointer;
     display:flex;
+    transition:ease-in-out 0.05s;
 }
 .troubleshoot-window-row:hover{
     background-color:var(--base-color-2);
 }
-.troubleshoot-window-row:active{
-    background-color:var(--base-color-3);
+.troubleshoot-window-row-text{
+    justify-content:flex-start;
+    align-items:center;
+    display:flex;
+
+    height:100%;
+    width:100%;
+}
+.troubleshoot-window-row-button{
+    flex-shrink:0;
 }
 
 .update-tile-prompt{
